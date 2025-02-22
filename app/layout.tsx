@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: "Get started quickly with Next.js, Postgres, and Stripe.",
   manifest: "/manifest.json",
   icons: {
+    icon: "/favicon.ico",
     apple: "/icon512_rounded.png",
   },
   themeColor: "#4F46E5",
