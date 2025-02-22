@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import { User } from "@/lib/infrastructure/db/schema";
 import { UserCircle, Bell } from "lucide-react";
-import { NotificationButton } from "@/components/NotificationButton";
+import { NotificationButton } from "@/components/pwa/NotificationButton";
 
 export const metadata: Metadata = {
   title: "設定",

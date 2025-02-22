@@ -5,7 +5,7 @@ import { Manrope } from "next/font/google";
 import { UserProvider } from "@/lib/infrastructure/auth";
 import { getCurrentUser } from "@/app/actions/user";
 import { Nav } from "@/components/layout/nav";
-import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
