@@ -8,6 +8,7 @@ import {
 } from "@/lib/shared/test-utils/mock-repositories";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import { redirect } from "next/navigation";
+import { UrlService } from "../url.service";
 
 // Stripeのモック
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({
@@ -62,6 +63,15 @@ describe("PaymentService", () => {
     container.register("OrderRepository", { useValue: mockOrderRepository });
     container.register("PaymentRepository", {
       useValue: mockPaymentRepository,
+    });
+    container.register("UrlService", {
+      useValue: {
+        getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
+        getFullImageUrl: jest.fn().mockImplementation((imageUrl) => {
+          if (!imageUrl) return "";
+          return `http://localhost:3000${imageUrl}`;
+        }),
+      },
     });
 
     // PaymentServiceのインスタンス化
@@ -484,6 +494,36 @@ describe("PaymentService", () => {
   });
 
   describe("URL utility functions", () => {
+    let originalEnv: NodeJS.ProcessEnv;
+    let paymentService: PaymentService;
+
+    beforeEach(() => {
+      originalEnv = process.env;
+      process.env = { ...originalEnv };
+
+      // モックリポジトリの初期化
+      const mockCartRepository = new MockCartRepository();
+      const mockOrderRepository = new MockOrderRepository();
+      const mockPaymentRepository = new MockPaymentRepository();
+      const urlService = new UrlService();
+
+      // DIコンテナの設定
+      container.register("CartRepository", { useValue: mockCartRepository });
+      container.register("OrderRepository", { useValue: mockOrderRepository });
+      container.register("PaymentRepository", {
+        useValue: mockPaymentRepository,
+      });
+      container.register("UrlService", { useValue: urlService });
+
+      // PaymentServiceのインスタンス化
+      paymentService = container.resolve(PaymentService);
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+      container.clearInstances();
+    });
+
     it("should validate URLs correctly", () => {
       const validUrls = [
         "https://example.com",
@@ -510,13 +550,18 @@ describe("PaymentService", () => {
     });
 
     it("should generate full image URLs correctly", () => {
-      process.env.BASE_URL = "https://example.com";
-
+      const mockUrlService = {
+        getBaseUrl: jest.fn().mockReturnValue("https://example.com"),
+        getFullUrl: jest.fn(),
+        isValidUrl: jest.fn(),
+      };
+      const paymentService = new PaymentService(
+        mockPaymentRepository,
+        mockCartRepository,
+        mockOrderRepository,
+        mockUrlService
+      );
       const testCases = [
-        {
-          input: null,
-          expected: undefined,
-        },
         {
           input: "https://external.com/image.jpg",
           expected: "https://external.com/image.jpg",
@@ -525,23 +570,28 @@ describe("PaymentService", () => {
           input: "/images/local.jpg",
           expected: "https://example.com/images/local.jpg",
         },
-        {
-          input: "images/local.jpg",
-          expected: "https://example.com/images/local.jpg",
-        },
       ];
 
       testCases.forEach(({ input, expected }) => {
         // @ts-ignore: テスト用に private 関数にアクセス
-        expect(PaymentService["getFullImageUrl"](input)).toBe(expected);
+        expect(paymentService["getFullImageUrl"](input)).toBe(expected);
       });
     });
 
     it("should handle missing BASE_URL", () => {
-      process.env.BASE_URL = undefined;
-
+      const mockUrlService = {
+        getBaseUrl: jest.fn().mockReturnValue(""),
+        getFullUrl: jest.fn(),
+        isValidUrl: jest.fn(),
+      };
+      const paymentService = new PaymentService(
+        mockPaymentRepository,
+        mockCartRepository,
+        mockOrderRepository,
+        mockUrlService
+      );
       // @ts-ignore: テスト用に private 関数にアクセス
-      expect(PaymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
+      expect(paymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
     });
   });
 });

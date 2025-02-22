@@ -321,19 +321,12 @@ export class MockPaymentRepository {
     userId: number;
     orderId: number;
   }): Promise<{ id: string; url: string }> {
-    return {
-      id: "session_123",
-      url: "https://checkout.stripe.com/session",
-    };
+    return { id: "test_session_id", url: "https://example.com/checkout" };
   }
 
-  async handlePaymentSuccess(sessionId: string): Promise<void> {
-    return;
-  }
+  async handlePaymentSuccess(sessionId: string): Promise<void> {}
 
-  async handlePaymentFailure(sessionId: string): Promise<void> {
-    return;
-  }
+  async handlePaymentFailure(sessionId: string): Promise<void> {}
 
   async getStripePrices(): Promise<any[]> {
     return [];
@@ -343,12 +336,35 @@ export class MockPaymentRepository {
     return [];
   }
 
-  async create(data: any): Promise<any> {
-    return { id: 1, ...data };
+  async findById(id: number): Promise<Order | null> {
+    return null;
   }
 
-  async update(id: number, data: any): Promise<any> {
-    return { id, ...data };
+  async findAll(): Promise<Order[]> {
+    return [];
+  }
+
+  async create(data: any): Promise<Order> {
+    return {
+      id: 1,
+      userId: 1,
+      status: "pending",
+      totalAmount: "0",
+      currency: "USD",
+      stripeSessionId: null,
+      stripePaymentIntentId: null,
+      shippingAddress: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async update(id: number, data: Partial<Order>): Promise<Order | null> {
+    return null;
+  }
+
+  async delete(id: number): Promise<boolean> {
+    return true;
   }
 }
 

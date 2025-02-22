@@ -22,6 +22,8 @@ import { PaymentService } from "@/lib/core/services/payment.service";
 import { OrderService } from "@/lib/core/services/order.service";
 import { UserService } from "@/lib/core/services/user.service";
 import { db } from "@/lib/infrastructure/db/drizzle";
+import { UrlService } from "@/lib/core/services/url.service";
+import { IUrlService } from "../core/services/interfaces/url.service";
 
 let isInitialized = false;
 
@@ -65,6 +67,8 @@ function initializeContainer() {
   );
   container.registerSingleton<IOrderService>("OrderService", OrderService);
   container.registerSingleton<IUserService>("UserService", UserService);
+
+  container.registerSingleton<IUrlService>("UrlService", UrlService);
 
   isInitialized = true;
 }

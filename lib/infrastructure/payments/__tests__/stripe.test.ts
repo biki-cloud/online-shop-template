@@ -15,6 +15,7 @@ import {
   updateOrder,
 } from "@/app/actions/order";
 import type { Cart, CartItem, Product } from "@/lib/infrastructure/db/schema";
+import { UrlService } from "@/lib/core/services/url.service";
 
 // モックの設定
 jest.mock("next/navigation", () => ({
@@ -29,6 +30,24 @@ jest.mock("@/app/actions/order", () => ({
 
 jest.mock("@/lib/shared/utils", () => ({
   calculateOrderAmount: jest.fn(),
+}));
+
+// UrlServiceのモック
+jest.mock("@/lib/core/services/url.service", () => ({
+  UrlService: jest.fn().mockImplementation(() => ({
+    getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
+    getFullUrl: jest
+      .fn()
+      .mockImplementation((path: string) => `http://localhost:3000${path}`),
+    isValidUrl: jest.fn().mockImplementation((url: string) => {
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        return false;
+      }
+    }),
+  })),
 }));
 
 // Stripeのモック
@@ -77,7 +96,6 @@ describe("Stripe Payment Integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.STRIPE_SECRET_KEY = "test_key";
-    process.env.BASE_URL = "http://localhost:3000";
   });
 
   describe("createCheckoutSession", () => {

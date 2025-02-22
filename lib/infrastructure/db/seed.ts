@@ -1,4 +1,3 @@
-import { stripe } from "../payments/stripe";
 import { db } from "./drizzle";
 import {
   users,
@@ -8,7 +7,7 @@ import {
   orders,
   orderItems,
 } from "./schema";
-import { hashPassword } from "@/lib/infrastructure/auth/session";
+import { hash } from "bcryptjs";
 import type { NewUser, NewProduct } from "./schema";
 import { sql } from "drizzle-orm";
 
@@ -43,13 +42,13 @@ async function seedUsers() {
     {
       name: "Test User",
       email: "test@example.com",
-      passwordHash: await hashPassword("password123"),
+      passwordHash: await hash("password123", 10),
       role: "user",
     },
     {
       name: "Admin User",
       email: "admin@example.com",
-      passwordHash: await hashPassword("admin123"),
+      passwordHash: await hash("admin123", 10),
       role: "admin",
     },
   ];

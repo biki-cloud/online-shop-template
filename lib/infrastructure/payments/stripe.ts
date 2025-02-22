@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 import { redirect } from "next/navigation";
+import { container } from "@/lib/di/container";
+import type { IUrlService } from "@/lib/core/services/interfaces/url.service";
 import type { Cart, CartItem, Product } from "@/lib/infrastructure/db/schema";
 import { calculateOrderAmount } from "@/lib/shared/utils";
 import {
@@ -12,29 +14,17 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-01-27.acacia",
 });
 
-function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function getFullImageUrl(imageUrl: string | null): string | undefined {
   if (!imageUrl) return undefined;
 
+  const urlService = container.resolve<IUrlService>("UrlService");
+
   // 既に完全なURLの場合はそのまま返す
-  if (isValidUrl(imageUrl)) {
+  if (urlService.isValidUrl(imageUrl)) {
     return imageUrl;
   }
 
-  // 相対パスの場合は、BASE_URLと組み合わせて完全なURLを生成
-  const baseUrl = process.env.BASE_URL?.replace(/\/$/, "");
-  if (!baseUrl) return undefined;
-
-  const fullUrl = `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
-  return isValidUrl(fullUrl) ? fullUrl : undefined;
+  return urlService.getFullUrl(imageUrl);
 }
 
 export async function createCheckoutSession({
@@ -49,6 +39,8 @@ export async function createCheckoutSession({
   if (!cartItems.length) {
     redirect("/cart");
   }
+
+  const urlService = container.resolve<IUrlService>("UrlService");
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + Number(item.product!.price) * item.quantity,
@@ -97,8 +89,10 @@ export async function createCheckoutSession({
     payment_method_types: ["card"],
     line_items: lineItems,
     mode: "payment",
-    success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.BASE_URL}/cart`,
+    success_url: urlService.getFullUrl(
+      "/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}"
+    ),
+    cancel_url: urlService.getFullUrl("/cart"),
     metadata: {
       orderId: order.id.toString(),
     },

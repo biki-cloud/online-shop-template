@@ -8,6 +8,8 @@ import type { ICartRepository } from "../repositories/interfaces/cart.repository
 import type { IOrderRepository } from "../repositories/interfaces/order.repository";
 import type { Cart, CartItem } from "@/lib/core/domain/cart";
 import type { IPaymentService } from "./interfaces/payment.service";
+import { UrlService } from "./url.service";
+import type { IUrlService } from "./interfaces/url.service";
 
 @injectable()
 export class PaymentService implements IPaymentService {
@@ -17,7 +19,9 @@ export class PaymentService implements IPaymentService {
     @inject("CartRepository")
     private readonly cartRepository: ICartRepository,
     @inject("OrderRepository")
-    private readonly orderRepository: IOrderRepository
+    private readonly orderRepository: IOrderRepository,
+    @inject("UrlService")
+    private readonly urlService: IUrlService
   ) {}
 
   private static isValidUrl(url: string): boolean {
@@ -29,7 +33,7 @@ export class PaymentService implements IPaymentService {
     }
   }
 
-  private static getFullImageUrl(imageUrl: string | null): string | undefined {
+  private getFullImageUrl(imageUrl: string | null): string | undefined {
     if (!imageUrl) return undefined;
 
     // 既に完全なURLの場合はそのまま返す
@@ -37,8 +41,8 @@ export class PaymentService implements IPaymentService {
       return imageUrl;
     }
 
-    // 相対パスの場合は、BASE_URLと組み合わせて完全なURLを生成
-    const baseUrl = process.env.BASE_URL?.replace(/\/$/, "");
+    // 相対パスの場合は、urlServiceを使用して完全なURLを生成
+    const baseUrl = this.urlService.getBaseUrl().replace(/\/$/, "");
     if (!baseUrl) return undefined;
 
     const fullUrl = `${baseUrl}${

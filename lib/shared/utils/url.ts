@@ -1,3 +1,6 @@
+import { container } from "tsyringe";
+import { UrlService } from "@/lib/core/services/url.service";
+
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url);
@@ -14,7 +17,8 @@ export function getFullImageUrl(imageUrl: string | null): string | undefined {
     return imageUrl;
   }
 
-  const baseUrl = process.env.BASE_URL?.replace(/\/$/, "");
+  const urlService = container.resolve(UrlService);
+  const baseUrl = urlService.getBaseUrl().replace(/\/$/, "");
   if (!baseUrl) return undefined;
 
   const fullUrl = `${baseUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;

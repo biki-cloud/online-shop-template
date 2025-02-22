@@ -4,6 +4,7 @@ module.exports = {
   testEnvironment: "jsdom",
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
+    "^jose$": "<rootDir>/lib/infrastructure/auth/__mocks__/jose.ts",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
@@ -13,11 +14,13 @@ module.exports = {
       {
         tsconfig: "tsconfig.test.json",
         isolatedModules: true,
+        useESM: true,
       },
     ],
   },
-  transformIgnorePatterns: ["/node_modules/(?!jose|@panva/hkdf)/"],
+  transformIgnorePatterns: ["/node_modules/(?!@panva/hkdf)/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+  extensionsToTreatAsEsm: [".ts", ".tsx"],
   collectCoverage: true,
   collectCoverageFrom: [
     "**/*.{js,jsx,ts,tsx}",
