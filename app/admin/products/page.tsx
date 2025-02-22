@@ -1,3 +1,7 @@
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0; // SSRモード
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { getProducts } from "@/app/actions/product";
