@@ -1,36 +1,67 @@
-# Next.js SaaS Starter
+# Online Shop Template
 
-This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.
-
-**Demo: [https://next-saas-start.vercel.app/](https://next-saas-start.vercel.app/)**
+This is a online shop starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.
 
 ## Features
 
-- Marketing landing page (`/`) with animated Terminal element
-- Pricing page (`/pricing`) which connects to Stripe Checkout
-- Dashboard pages with CRUD operations on users/teams
-- Basic RBAC with Owner and Member roles
-- Subscription management with Stripe Customer Portal
-- Email/password authentication with JWTs stored to cookies
-- Global middleware to protect logged-in routes
-- Local middleware to protect Server Actions or validate Zod schemas
-- Activity logging system for any user events
+- 商品管理機能
+  - 商品一覧表示 (`/products`)
+  - 商品詳細表示
+  - 商品検索・フィルタリング
+- ショッピングカート機能 (`/cart`)
+  - カートへの商品追加/削除
+  - 数量調整
+- 注文管理機能 (`/orders`)
+  - 注文履歴の表示
+  - 注文状況の追跡
+- 決済機能
+  - Stripe を利用した安全な決済処理
+  - チェックアウトページ (`/checkout`)
+- ユーザー管理機能
+  - メール/パスワード認証
+  - JWT を使用したセッション管理
+  - ユーザー設定ページ (`/settings`)
+- 管理者機能 (`/admin`)
+  - 商品の登録/編集/削除
+  - 注文管理
+  - ユーザー管理
+- セキュリティ機能
+  - ミドルウェアによる保護されたルート
+  - RBAC（ロールベースアクセス制御）
+  - アクティビティログ記録
+- モダンな UI/UX
+  - レスポンシブデザイン
+  - Shadcn UI コンポーネント
+  - Tailwind CSS によるスタイリング
 
 ## Tech Stack
 
-- **Framework**: [Next.js](https://nextjs.org/)
-- **Database**: [Postgres](https://www.postgresql.org/)
-- **ORM**: [Drizzle](https://orm.drizzle.team/)
-- **Payments**: [Stripe](https://stripe.com/)
-- **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
-
-## Getting Started
-
-```bash
-git clone https://github.com/nextjs/saas-starter
-cd saas-starter
-pnpm install
-```
+- **フレームワーク**
+  - [Next.js](https://nextjs.org/) - React ベースのフルスタックフレームワーク
+  - [React](https://react.dev/) - UI ライブラリ
+- **データベース**
+  - [PostgreSQL](https://www.postgresql.org/) - リレーショナルデータベース
+  - [Supabase](https://supabase.com/) - バックエンドサービス
+- **ORM & データ管理**
+  - [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ネイティブ ORM
+  - [React Hook Form](https://react-hook-form.com/) - フォーム状態管理
+  - [Zod](https://zod.dev/) - スキーマ検証
+- **ストレージ**
+  - [Supabase Storage](https://supabase.com/docs/guides/storage) - S3 互換のオブジェクトストレージ
+  - [@supabase/storage-js](https://github.com/supabase/storage-js) - ストレージクライアント
+- **認証 & セキュリティ**
+  - [JWT](https://jwt.io/) - トークンベース認証
+  - [bcrypt](https://github.com/kelektiv/node.bcrypt.js) - パスワードハッシュ化
+- **UI & スタイリング**
+  - [shadcn/ui](https://ui.shadcn.com/) - UI コンポーネントライブラリ
+  - [Radix UI](https://www.radix-ui.com/) - ヘッドレス UI コンポーネント
+  - [Tailwind CSS](https://tailwindcss.com/) - CSS フレームワーク
+  - [Framer Motion](https://www.framer.com/motion/) - アニメーションライブラリ
+- **決済**
+  - [Stripe](https://stripe.com/) - 決済プラットフォーム
+- **テスト**
+  - [Jest](https://jestjs.io/) - テストフレームワーク
+  - [Testing Library](https://testing-library.com/) - UI テストユーティリティ
 
 ## Running Locally
 
@@ -60,7 +91,7 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
 
-#### Init user and admin
+#### Prepared user and admin
 
 - User: `test@example.com`
 - Password: `password123`
@@ -83,6 +114,11 @@ To test Stripe payments, use the following test card details:
 - Card Number: `4242 4242 4242 4242`
 - Expiration: Any future date
 - CVC: Any 3-digit number
+
+##### About cookie
+
+if you in trouble about cookie, recommend delete cookie in localhost.
+[chrome://settings/content/all](chrome://settings/content/all)
 
 ## Going to Production
 
