@@ -63,6 +63,25 @@ This is a online shop starter template for building a SaaS application using **N
   - [Jest](https://jestjs.io/) - テストフレームワーク
   - [Testing Library](https://testing-library.com/) - UI テストユーティリティ
 
+## Project Structure
+
+```bash
+.
+├── app/                # Next.js App Router pages and API routes
+├── components/         # Reusable React components
+├── lib/               # Utility functions and shared logic
+├── public/            # Static assets
+├── types/             # TypeScript type definitions
+├── supabase/          # local Supabase configurations and migrations
+```
+
+## Prerequisites
+
+- Node.js 18.0.0 or later
+- pnpm 8.0.0 or later
+- PostgreSQL 15.0 or later
+- Stripe CLI (for webhook testing)
+
 ## Running Locally
 
 ### 1. create stripe account
