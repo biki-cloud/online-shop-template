@@ -1,29 +1,34 @@
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const preferredRegion = "iad1";
 export const dynamic = "force-dynamic";
 
-import { compare, hash } from "bcryptjs";
+// セキュリティのために環境変数の存在チェックを追加
+if (!process.env.AUTH_SECRET) {
+  throw new Error("AUTH_SECRET environment variable is not set");
+}
+
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NewUser } from "@/lib/infrastructure/db/schema";
+import { createHash, randomBytes, scryptSync } from "crypto";
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
-const SALT_ROUNDS = 10;
 
-export async function hashPassword(password: string) {
-  return hash(password, SALT_ROUNDS);
+// パスワードのハッシュ化関数
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
 }
 
+// パスワードの比較関数
 export async function comparePasswords(
   plainTextPassword: string,
   hashedPassword: string
-) {
-  console.log("Comparing passwords:");
-  console.log("Plain text:", plainTextPassword);
-  console.log("Hashed:", hashedPassword);
-  const result = await compare(plainTextPassword, hashedPassword);
-  console.log("Compare result:", result);
-  return result;
+): Promise<boolean> {
+  const [salt, hash] = hashedPassword.split(":");
+  const newHash = scryptSync(plainTextPassword, salt, 64).toString("hex");
+  return hash === newHash;
 }
 
 type SessionData = {

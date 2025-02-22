@@ -21,6 +21,11 @@ export const metadata = {
     "高品質な商品を取り揃えたオンラインショップの商品一覧ページです。",
 };
 
+export const revalidate = 3600; // 1時間ごとに再検証
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default async function ProductsPage() {
   const products = await getProducts();
 
