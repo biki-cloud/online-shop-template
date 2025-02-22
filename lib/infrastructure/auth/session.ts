@@ -10,13 +10,23 @@ if (!process.env.AUTH_SECRET) {
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NewUser } from "@/lib/infrastructure/db/schema";
-import { hash, verify } from "@node-rs/argon2";
+import { argon2id } from "hash-wasm";
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 
 // パスワードのハッシュ化関数
 export async function hashPassword(password: string): Promise<string> {
-  return hash(password);
+  const salt = crypto.getRandomValues(new Uint8Array(32));
+  const hash = await argon2id({
+    password,
+    salt,
+    parallelism: 1,
+    iterations: 256,
+    memorySize: 512,
+    hashLength: 32,
+    outputType: "encoded",
+  });
+  return hash;
 }
 
 // パスワードの比較関数
@@ -24,7 +34,21 @@ export async function comparePasswords(
   plainTextPassword: string,
   hashedPassword: string
 ): Promise<boolean> {
-  return verify(hashedPassword, plainTextPassword);
+  try {
+    const hash = await argon2id({
+      password: plainTextPassword,
+      salt: new Uint8Array(0), // ソルトは encoded 形式のハッシュに含まれているため、ここでは不要
+      parallelism: 1,
+      iterations: 256,
+      memorySize: 512,
+      hashLength: 32,
+      outputType: "encoded",
+    });
+    return hash === hashedPassword;
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
 }
 
 type SessionData = {
