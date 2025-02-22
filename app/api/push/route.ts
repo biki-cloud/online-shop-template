@@ -14,8 +14,16 @@ interface PushPayload {
   url: string;
 }
 
+interface WebPushSubscription {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+
 interface RequestBody {
-  subscription: PushSubscription;
+  subscription: WebPushSubscription;
   payload: PushPayload;
 }
 

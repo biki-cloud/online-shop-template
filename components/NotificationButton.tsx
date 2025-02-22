@@ -8,6 +8,14 @@ import { Bell, BellRing, Send } from "lucide-react";
 const PUSH_NOTIFICATION_STORAGE_KEY = "push-notification-status";
 const PUSH_SUBSCRIPTION_STORAGE_KEY = "push-subscription";
 
+interface WebPushSubscription {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+}
+
 export function NotificationButton() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(
@@ -171,7 +179,25 @@ export function NotificationButton() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          subscription,
+          subscription: {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.getKey("p256dh")
+                ? btoa(
+                    String.fromCharCode(
+                      ...new Uint8Array(subscription.getKey("p256dh")!)
+                    )
+                  )
+                : "",
+              auth: subscription.getKey("auth")
+                ? btoa(
+                    String.fromCharCode(
+                      ...new Uint8Array(subscription.getKey("auth")!)
+                    )
+                  )
+                : "",
+            },
+          } as WebPushSubscription,
           payload: {
             title: "テスト通知",
             body: "プッシュ通知のテストです",
