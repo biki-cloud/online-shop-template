@@ -6,8 +6,6 @@ import crypto from "node:crypto";
 import path from "node:path";
 import os from "node:os";
 import "reflect-metadata";
-import "@testing-library/jest-dom";
-import "jest-fetch-mock";
 
 const execAsync = promisify(exec);
 
@@ -306,12 +304,8 @@ async function main() {
     POSTGRES_URL: postgresUrl,
   });
 
-  console.log("🎉 Setup completed successfully!");
+  console.log("🎉 Local Setup completed successfully!");
   console.log("Supabase Dashboard is available at: http://localhost:54323");
 }
-
-// Fetch Mockの設定
-require("jest-fetch-mock").enableMocks();
-global.fetch = require("jest-fetch-mock");
 
 main().catch(console.error);
