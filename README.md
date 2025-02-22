@@ -34,13 +34,11 @@ pnpm install
 
 ## Running Locally
 
-create stripe account
+### 1. create stripe account
 
-create supabase account
+### 2. create supabase account
 
-```bash
-$ supabase start
-```
+### 3. run setup command
 
 Use the included setup script to create your `.env` file:
 
