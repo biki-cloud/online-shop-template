@@ -3,28 +3,12 @@ import { getProduct } from "@/app/actions/product";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 import { AdminProductForm } from "@/components/admin/products/product-form";
 
-interface PageParams {
-  id: string;
-}
-
-interface SearchParams {
-  [key: string]: string | string[] | undefined;
-}
-
 interface Props {
-  params: Promise<PageParams>;
-  searchParams: Promise<SearchParams>;
+  params: Promise<{ id: string }>;
 }
 
-export default async function AdminProductEditPage({
-  params,
-  searchParams,
-}: Props) {
-  const [resolvedParams, resolvedSearchParams] = await Promise.all([
-    params,
-    searchParams,
-  ]);
-
+export default async function AdminProductEditPage({ params }: Props) {
+  const resolvedParams = await params;
   if (!resolvedParams?.id || isNaN(Number(resolvedParams.id))) {
     notFound();
   }

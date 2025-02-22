@@ -3,23 +3,11 @@ import { getProduct } from "@/app/actions/product";
 import { AdminProductDetail } from "@/components/admin/products/product-detail";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 
-interface PageParams {
-  id: string;
-}
-
-interface SearchParams {
-  [key: string]: string | string[] | undefined;
-}
-
 interface Props {
-  params: Promise<PageParams>;
-  searchParams: Promise<SearchParams>;
+  params: Promise<{ id: string }>;
 }
 
-export default async function AdminProductDetailPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function AdminProductDetailPage({ params }: Props) {
   try {
     const resolvedParams = await params;
     const [isAdmin, product] = await Promise.all([
