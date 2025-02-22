@@ -550,7 +550,17 @@ describe("PaymentService", () => {
     });
 
     it("should generate full image URLs correctly", () => {
-      process.env.BASE_URL = "https://example.com";
+      const mockUrlService = {
+        getBaseUrl: jest.fn().mockReturnValue("https://example.com"),
+        getFullUrl: jest.fn(),
+        isValidUrl: jest.fn(),
+      };
+      const paymentService = new PaymentService(
+        mockPaymentRepository,
+        mockCartRepository,
+        mockOrderRepository,
+        mockUrlService
+      );
       const testCases = [
         {
           input: "https://external.com/image.jpg",
@@ -569,17 +579,17 @@ describe("PaymentService", () => {
     });
 
     it("should handle missing BASE_URL", () => {
-      process.env.BASE_URL = undefined;
-
-      // Mock UrlService to return undefined when BASE_URL is undefined
-      class MockUrlService extends UrlService {
-        getBaseUrl(): string {
-          return "";
-        }
-      }
-      container.registerInstance("UrlService", new MockUrlService());
-      paymentService = container.resolve(PaymentService);
-
+      const mockUrlService = {
+        getBaseUrl: jest.fn().mockReturnValue(""),
+        getFullUrl: jest.fn(),
+        isValidUrl: jest.fn(),
+      };
+      const paymentService = new PaymentService(
+        mockPaymentRepository,
+        mockCartRepository,
+        mockOrderRepository,
+        mockUrlService
+      );
       // @ts-ignore: テスト用に private 関数にアクセス
       expect(paymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
     });
