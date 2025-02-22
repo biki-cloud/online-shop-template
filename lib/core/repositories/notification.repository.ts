@@ -1,6 +1,5 @@
 "use client";
 
-import "reflect-metadata";
 import { injectable } from "tsyringe";
 import type {
   NotificationSubscription,
@@ -15,18 +14,19 @@ export class NotificationRepository implements INotificationRepository {
     SUBSCRIPTION: "push-subscription",
   };
 
-  constructor() {}
-
   async checkSupport(): Promise<boolean> {
+    if (typeof window === "undefined") return false;
     return "Notification" in window && "serviceWorker" in navigator;
   }
 
   async requestPermission(): Promise<boolean> {
+    if (typeof window === "undefined") return false;
     const permission = await Notification.requestPermission();
     return permission === "granted";
   }
 
   async subscribe(): Promise<PushSubscription | null> {
+    if (typeof window === "undefined") return null;
     try {
       const registration = await navigator.serviceWorker.ready;
       return await registration.pushManager.subscribe({
@@ -40,6 +40,7 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   async unsubscribe(subscription: PushSubscription): Promise<boolean> {
+    if (typeof window === "undefined") return false;
     try {
       await subscription.unsubscribe();
       return true;
@@ -53,8 +54,9 @@ export class NotificationRepository implements INotificationRepository {
     subscription: PushSubscription,
     payload: NotificationPayload
   ): Promise<boolean> {
+    if (typeof window === "undefined") return false;
     try {
-      await fetch("/api/push", {
+      const response = await fetch("/api/push", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +66,7 @@ export class NotificationRepository implements INotificationRepository {
           payload,
         }),
       });
-      return true;
+      return response.ok;
     } catch (error) {
       console.error("Failed to send notification:", error);
       return false;
@@ -72,6 +74,7 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   saveSubscription(subscription: PushSubscription): void {
+    if (typeof window === "undefined") return;
     localStorage.setItem(this.STORAGE_KEYS.NOTIFICATION_STATUS, "true");
     localStorage.setItem(
       this.STORAGE_KEYS.SUBSCRIPTION,
@@ -80,11 +83,13 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   clearSubscription(): void {
+    if (typeof window === "undefined") return;
     localStorage.removeItem(this.STORAGE_KEYS.NOTIFICATION_STATUS);
     localStorage.removeItem(this.STORAGE_KEYS.SUBSCRIPTION);
   }
 
   async getStoredSubscription(): Promise<PushSubscription | null> {
+    if (typeof window === "undefined") return null;
     const storedStatus = localStorage.getItem(
       this.STORAGE_KEYS.NOTIFICATION_STATUS
     );

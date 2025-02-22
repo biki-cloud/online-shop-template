@@ -4,12 +4,19 @@ import "reflect-metadata";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
-import { container } from "@/lib/di/container";
+import {
+  notificationContainer,
+  initializeNotificationContainer,
+} from "@/lib/di/notification-container";
+
+// 通知機能のコンテナを初期化（クライアントサイドのみ）
+if (typeof window !== "undefined") {
+  initializeNotificationContainer();
+}
 
 export function useNotification() {
-  const notificationService = container.resolve<INotificationService>(
-    "NotificationService"
-  );
+  const notificationService =
+    notificationContainer.resolve<INotificationService>("NotificationService");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null
