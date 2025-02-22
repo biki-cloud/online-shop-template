@@ -3,9 +3,7 @@ import { ProductDetails } from "@/components/products/product-details";
 import { getProduct } from "@/app/actions/product";
 
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ProductPage({ params }: Props) {

@@ -4,14 +4,11 @@ import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 import { AdminProductForm } from "@/components/admin/products/product-form";
 
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
 export default async function AdminProductEditPage({ params }: Props) {
-  const resolvedParams = await Promise.resolve(params);
-
+  const resolvedParams = await params;
   if (!resolvedParams?.id || isNaN(Number(resolvedParams.id))) {
     notFound();
   }

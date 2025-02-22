@@ -3,18 +3,19 @@ import { getProduct } from "@/app/actions/product";
 import { AdminProductDetail } from "@/components/admin/products/product-detail";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 
+// プリレンダリングを無効化
+export const dynamic = "force-dynamic";
+
 interface Props {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
-export default async function AdminProductDetailPage(props: Props) {
+export default async function AdminProductDetailPage({ params }: Props) {
   try {
-    const params = await Promise.resolve(props.params);
+    const resolvedParams = await params;
     const [isAdmin, product] = await Promise.all([
       checkAdmin(),
-      getProduct(Number(params.id)),
+      getProduct(Number(resolvedParams.id)),
     ]);
 
     if (!isAdmin || !product) {
