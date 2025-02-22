@@ -134,7 +134,7 @@ To test Stripe payments, use the following test card details:
 - Expiration: Any future date
 - CVC: Any 3-digit number
 
-##### About cookie
+#### About cookie
 
 if you in trouble about cookie, recommend delete cookie in localhost.
 [chrome://settings/content/all](chrome://settings/content/all)
