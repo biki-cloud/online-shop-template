@@ -8,7 +8,7 @@ const withPWA = nextPWA({
   disable: process.env.NODE_ENV === "development",
 });
 
-const nextConfig: NextConfig = {
+const config = {
   experimental: {
     ppr: true,
     newDevOverlay: true,
@@ -36,6 +36,6 @@ const nextConfig: NextConfig = {
     ];
     return config;
   },
-};
+} satisfies NextConfig;
 
-export default withPWA(nextConfig);
+export default withPWA(config);
