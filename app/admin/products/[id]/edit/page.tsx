@@ -3,14 +3,27 @@ import { getProduct } from "@/app/actions/product";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 import { AdminProductForm } from "@/components/admin/products/product-form";
 
-interface Props {
-  params: {
-    id: string;
-  };
+interface PageParams {
+  id: string;
 }
 
-export default async function AdminProductEditPage({ params }: Props) {
-  const resolvedParams = await Promise.resolve(params);
+interface SearchParams {
+  [key: string]: string | string[] | undefined;
+}
+
+interface Props {
+  params: Promise<PageParams>;
+  searchParams: Promise<SearchParams>;
+}
+
+export default async function AdminProductEditPage({
+  params,
+  searchParams,
+}: Props) {
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
 
   if (!resolvedParams?.id || isNaN(Number(resolvedParams.id))) {
     notFound();

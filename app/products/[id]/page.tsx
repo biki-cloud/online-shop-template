@@ -2,13 +2,20 @@ import { notFound } from "next/navigation";
 import { ProductDetails } from "@/components/products/product-details";
 import { getProduct } from "@/app/actions/product";
 
-interface Props {
-  params: {
-    id: string;
-  };
+interface PageParams {
+  id: string;
 }
 
-export default async function ProductPage({ params }: Props) {
+interface SearchParams {
+  [key: string]: string | string[] | undefined;
+}
+
+interface Props {
+  params: Promise<PageParams>;
+  searchParams: Promise<SearchParams>;
+}
+
+export default async function ProductPage({ params, searchParams }: Props) {
   const resolvedParams = await params;
   const id = parseInt(resolvedParams.id);
   const product = await getProduct(id);
