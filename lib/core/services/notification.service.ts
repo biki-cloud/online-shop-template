@@ -5,11 +5,12 @@ import { injectable, inject } from "tsyringe";
 import type { NotificationPayload } from "../domain/notification";
 import type { INotificationService } from "./interfaces/notification.service";
 import type { INotificationRepository } from "../repositories/interfaces/notification.repository";
+import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 @injectable()
 export class NotificationService implements INotificationService {
   constructor(
-    @inject("INotificationRepository")
+    @inject(NOTIFICATION_TOKENS.REPOSITORY)
     private repository: INotificationRepository
   ) {}
 
@@ -37,13 +38,11 @@ export class NotificationService implements INotificationService {
     return success;
   }
 
-  async sendTestNotification(subscription: PushSubscription): Promise<boolean> {
-    const testPayload: NotificationPayload = {
-      title: "テスト通知",
-      body: "プッシュ通知のテストです",
-      url: "/",
-    };
-    return this.repository.sendNotification(subscription, testPayload);
+  async sendNotification(
+    subscription: PushSubscription,
+    payload: NotificationPayload
+  ): Promise<boolean> {
+    return this.repository.sendNotification(subscription, payload);
   }
 
   async getStoredSubscription(): Promise<PushSubscription | null> {

@@ -21,6 +21,7 @@ import type { INotificationRepository } from "@/lib/core/repositories/interfaces
 import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
 import { NotificationRepository } from "@/lib/core/repositories/notification.repository";
 import { NotificationService } from "@/lib/core/services/notification.service";
+import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 let isNotificationInitialized = false;
 
@@ -31,11 +32,11 @@ export function initializeNotificationContainer() {
   if (isNotificationInitialized) return;
 
   notificationContainer.registerSingleton<INotificationRepository>(
-    "INotificationRepository",
+    NOTIFICATION_TOKENS.REPOSITORY,
     NotificationRepository
   );
   notificationContainer.registerSingleton<INotificationService>(
-    "NotificationService",
+    NOTIFICATION_TOKENS.SERVICE,
     NotificationService
   );
 

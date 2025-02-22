@@ -4,19 +4,16 @@ import "reflect-metadata";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
+import type { NotificationPayload } from "@/lib/core/domain/notification";
 import {
   notificationContainer,
   initializeNotificationContainer,
 } from "@/lib/di/notification-container";
-
-// 通知機能のコンテナを初期化（クライアントサイドのみ）
-if (typeof window !== "undefined") {
-  initializeNotificationContainer();
-}
+import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 export function useNotification() {
-  const notificationService =
-    notificationContainer.resolve<INotificationService>("NotificationService");
+  const [notificationService, setNotificationService] =
+    useState<INotificationService | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null
@@ -24,7 +21,26 @@ export function useNotification() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
+  // コンテナの初期化とサービスの解決
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      initializeNotificationContainer();
+      const service = notificationContainer.resolve<INotificationService>(
+        NOTIFICATION_TOKENS.SERVICE
+      );
+      setNotificationService(service);
+    } catch (error) {
+      console.error("通知サービスの初期化に失敗しました:", error);
+      setIsLoading(false);
+    }
+  }, []);
+
+  // 通知の初期状態の設定
+  useEffect(() => {
+    if (!notificationService) return;
+
     let isMounted = true;
 
     const initializeNotificationState = async () => {
@@ -57,6 +73,8 @@ export function useNotification() {
   }, [notificationService]);
 
   const handleSubscribe = async () => {
+    if (!notificationService) return;
+
     try {
       setIsLoading(true);
 
@@ -88,7 +106,7 @@ export function useNotification() {
   };
 
   const handleUnsubscribe = async () => {
-    if (!subscription) return;
+    if (!notificationService || !subscription) return;
 
     try {
       setIsLoading(true);
@@ -108,19 +126,20 @@ export function useNotification() {
     }
   };
 
-  const handleSendTestNotification = async () => {
-    if (!subscription) {
+  const handleSendNotification = async (payload: NotificationPayload) => {
+    if (!notificationService || !subscription) {
       toast.error("通知の設定が必要です");
       return;
     }
 
     try {
       setIsSending(true);
-      const success = await notificationService.sendTestNotification(
-        subscription
+      const success = await notificationService.sendNotification(
+        subscription,
+        payload
       );
       if (success) {
-        toast.success("テスト通知を送信しました", {
+        toast.success("通知を送信しました", {
           description: "まもなく通知が届きます",
         });
       }
@@ -138,6 +157,6 @@ export function useNotification() {
     isSending,
     handleSubscribe,
     handleUnsubscribe,
-    handleSendTestNotification,
+    handleSendNotification,
   };
 }
