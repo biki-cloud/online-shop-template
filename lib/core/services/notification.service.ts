@@ -1,5 +1,6 @@
 "use client";
 
+import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
 import type { NotificationPayload } from "../domain/notification";
 import type { INotificationService } from "./interfaces/notification.service";

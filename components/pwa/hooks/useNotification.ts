@@ -1,5 +1,6 @@
 "use client";
 
+import "reflect-metadata";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
