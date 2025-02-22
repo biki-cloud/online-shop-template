@@ -38,10 +38,14 @@ create stripe account
 
 create supabase account
 
+```bash
+$ supabase start
+```
+
 Use the included setup script to create your `.env` file:
 
 ```bash
-pnpm db:setup
+pnpm local:setup
 ```
 
 Then, run the database migrations and seed the database with a default user and team:
