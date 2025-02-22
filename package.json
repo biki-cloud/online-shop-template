@@ -4,7 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "local:setup": "npx tsx lib/setup/setup.ts",
+    "local:setup": "npx tsx lib/local-setup/setup.ts",
     "db:seed": "npx tsx lib/infrastructure/db/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "npx tsx lib/infrastructure/db/migrate.ts",
