@@ -6,21 +6,25 @@ import type { IOrderRepository } from "@/lib/core/repositories/interfaces/order.
 import type { IPaymentRepository } from "@/lib/core/repositories/interfaces/payment.repository";
 import type { IUserRepository } from "@/lib/core/repositories/interfaces/user.repository";
 import type { IProductRepository } from "@/lib/core/repositories/interfaces/product.repository";
+import type { INotificationRepository } from "@/lib/core/repositories/interfaces/notification.repository";
 import { CartRepository } from "@/lib/core/repositories/cart.repository";
 import { OrderRepository } from "@/lib/core/repositories/order.repository";
 import { PaymentRepository } from "@/lib/core/repositories/payment.repository";
 import { UserRepository } from "@/lib/core/repositories/user.repository";
 import { ProductRepository } from "@/lib/core/repositories/product.repository";
+import { NotificationRepository } from "@/lib/core/repositories/notification.repository";
 import type { ICartService } from "@/lib/core/services/interfaces/cart.service";
 import type { IProductService } from "@/lib/core/services/interfaces/product.service";
 import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
 import type { IOrderService } from "@/lib/core/services/interfaces/order.service";
 import type { IUserService } from "@/lib/core/services/interfaces/user.service";
+import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
 import { CartService } from "@/lib/core/services/cart.service";
 import { ProductService } from "@/lib/core/services/product.service";
 import { PaymentService } from "@/lib/core/services/payment.service";
 import { OrderService } from "@/lib/core/services/order.service";
 import { UserService } from "@/lib/core/services/user.service";
+import { NotificationService } from "@/lib/core/services/notification.service";
 import { db } from "@/lib/infrastructure/db/drizzle";
 import { UrlService } from "@/lib/core/services/url.service";
 import { IUrlService } from "../core/services/interfaces/url.service";
@@ -54,6 +58,10 @@ function initializeContainer() {
     "ProductRepository",
     ProductRepository
   );
+  container.registerSingleton<INotificationRepository>(
+    "INotificationRepository",
+    NotificationRepository
+  );
 
   // Register Services
   container.registerSingleton<ICartService>("CartService", CartService);
@@ -67,6 +75,10 @@ function initializeContainer() {
   );
   container.registerSingleton<IOrderService>("OrderService", OrderService);
   container.registerSingleton<IUserService>("UserService", UserService);
+  container.registerSingleton<INotificationService>(
+    "NotificationService",
+    NotificationService
+  );
 
   container.registerSingleton<IUrlService>("UrlService", UrlService);
 

@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import { User } from "@/lib/infrastructure/db/schema";
 import { UserCircle, Bell } from "lucide-react";
-import { NotificationButton } from "@/components/pwa/NotificationButton";
+import { TestNotification } from "@/components/pwa/TestNotification";
 
 export const metadata: Metadata = {
   title: "設定",
@@ -70,7 +70,7 @@ export default async function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <NotificationButton />
+              <TestNotification />
             </CardContent>
           </Card>
         </div>
