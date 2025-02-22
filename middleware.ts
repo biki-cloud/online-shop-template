@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { signToken, verifyToken } from "@/lib/infrastructure/auth/session";
 
+// Edge Runtimeでbcryptjsを使用しないように設定
+export const runtime = "nodejs";
+
 const protectedRoutes = ["/cart", "/checkout"];
 const adminRoutes = ["/admin"];
 
