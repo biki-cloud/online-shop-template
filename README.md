@@ -77,7 +77,7 @@ Use the included setup script to create your `.env` file:
 pnpm local:setup
 ```
 
-### 4. init and insert db
+### 4. init and insert data to db
 
 ```bash
 pnpm db:reset
