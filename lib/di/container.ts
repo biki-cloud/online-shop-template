@@ -67,7 +67,6 @@ function initializeContainer() {
   );
   container.registerSingleton<IOrderService>("OrderService", OrderService);
   container.registerSingleton<IUserService>("UserService", UserService);
-
   container.registerSingleton<IUrlService>("UrlService", UrlService);
 
   isInitialized = true;

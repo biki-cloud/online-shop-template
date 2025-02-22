@@ -5,10 +5,18 @@ import { Manrope } from "next/font/google";
 import { UserProvider } from "@/lib/infrastructure/auth";
 import { getCurrentUser } from "@/app/actions/user";
 import { Nav } from "@/components/layout/nav";
+import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Next.js SaaS Starter",
   description: "Get started quickly with Next.js, Postgres, and Stripe.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/icon512_rounded.png",
+  },
+  themeColor: "#4F46E5",
 };
 
 export const viewport: Viewport = {
@@ -31,8 +39,10 @@ export default function RootLayout({
     >
       <body className="min-h-[100dvh] bg-gray-50">
         <UserProvider userPromise={userPromise}>
+          <ServiceWorkerRegistration />
           <Nav />
           {children}
+          <Toaster />
         </UserProvider>
       </body>
     </html>

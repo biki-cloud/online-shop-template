@@ -11,7 +11,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import { User } from "@/lib/infrastructure/db/schema";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Bell } from "lucide-react";
+import { NotificationSettingsPanel } from "@/components/settings/NotificationSettingsPanel";
 
 export const metadata: Metadata = {
   title: "設定",
@@ -54,6 +55,22 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent>
               <ProfileForm user={user} />
+            </CardContent>
+          </Card>
+          <Card className="border-orange-100 dark:border-orange-500/20 shadow-lg shadow-orange-100/50 dark:shadow-none backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Bell className="w-5 h-5 text-orange-600/90 dark:text-orange-400" />
+                <CardTitle className="text-xl text-orange-600 dark:text-orange-400">
+                  通知設定
+                </CardTitle>
+              </div>
+              <CardDescription className="text-muted-foreground">
+                プッシュ通知の設定を管理します。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NotificationSettingsPanel />
             </CardContent>
           </Card>
         </div>

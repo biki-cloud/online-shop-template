@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
+import nextPWA from "next-pwa";
 
-const nextConfig: NextConfig = {
+const withPWA = nextPWA({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+});
+
+const config = {
   experimental: {
     ppr: true,
     newDevOverlay: true,
@@ -28,6 +36,6 @@ const nextConfig: NextConfig = {
     ];
     return config;
   },
-};
+} satisfies NextConfig;
 
-export default nextConfig;
+export default withPWA(config);
