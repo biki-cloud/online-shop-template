@@ -46,24 +46,13 @@ Use the included setup script to create your `.env` file:
 pnpm local:setup
 ```
 
-Then, run the database migrations and seed the database with a default user and team:
+### 4. init and insert db
 
 ```bash
-pnpm db:migrate
-pnpm db:seed
+pnpm db:reset
 ```
 
-This will create the following user:
-
-- User: `test@example.com`
-- Password: `password123`
-
-- admin User: `admin@example.com`
-- Password: `admin123`
-
-You can, of course, create new users as well through `/sign-up`.
-
-Finally, run the Next.js development server:
+### 5. Run server
 
 ```bash
 pnpm dev
@@ -71,13 +60,23 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the app in action.
 
+#### Init user and admin
+
+- User: `test@example.com`
+- Password: `password123`
+
+- admin User: `admin@example.com`
+- Password: `admin123`
+
+#### listen stripe webhoook
+
 Optionally, you can listen for Stripe webhooks locally through their CLI to handle subscription change events:
 
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-## Testing Payments
+#### Testing Payments
 
 To test Stripe payments, use the following test card details:
 
