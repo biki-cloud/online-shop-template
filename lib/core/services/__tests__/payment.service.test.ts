@@ -64,6 +64,15 @@ describe("PaymentService", () => {
     container.register("PaymentRepository", {
       useValue: mockPaymentRepository,
     });
+    container.register("UrlService", {
+      useValue: {
+        getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
+        getFullImageUrl: jest.fn().mockImplementation((imageUrl) => {
+          if (!imageUrl) return "";
+          return `http://localhost:3000${imageUrl}`;
+        }),
+      },
+    });
 
     // PaymentServiceのインスタンス化
     paymentService = container.resolve(PaymentService);
@@ -486,10 +495,28 @@ describe("PaymentService", () => {
 
   describe("URL utility functions", () => {
     let originalEnv: NodeJS.ProcessEnv;
+    let paymentService: PaymentService;
 
     beforeEach(() => {
       originalEnv = process.env;
       process.env = { ...originalEnv };
+
+      // モックリポジトリの初期化
+      const mockCartRepository = new MockCartRepository();
+      const mockOrderRepository = new MockOrderRepository();
+      const mockPaymentRepository = new MockPaymentRepository();
+      const urlService = new UrlService();
+
+      // DIコンテナの設定
+      container.register("CartRepository", { useValue: mockCartRepository });
+      container.register("OrderRepository", { useValue: mockOrderRepository });
+      container.register("PaymentRepository", {
+        useValue: mockPaymentRepository,
+      });
+      container.register("UrlService", { useValue: urlService });
+
+      // PaymentServiceのインスタンス化
+      paymentService = container.resolve(PaymentService);
     });
 
     afterEach(() => {
@@ -537,7 +564,7 @@ describe("PaymentService", () => {
 
       testCases.forEach(({ input, expected }) => {
         // @ts-ignore: テスト用に private 関数にアクセス
-        expect(PaymentService["getFullImageUrl"](input)).toBe(expected);
+        expect(paymentService["getFullImageUrl"](input)).toBe(expected);
       });
     });
 
@@ -550,10 +577,11 @@ describe("PaymentService", () => {
           return "";
         }
       }
-      container.registerInstance(UrlService, new MockUrlService());
+      container.registerInstance("UrlService", new MockUrlService());
+      paymentService = container.resolve(PaymentService);
 
       // @ts-ignore: テスト用に private 関数にアクセス
-      expect(PaymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
+      expect(paymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
     });
   });
 });

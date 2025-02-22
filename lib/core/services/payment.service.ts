@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import "reflect-metadata";
-import { inject, injectable, container } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import type { IPaymentRepository } from "../repositories/interfaces/payment.repository";
@@ -9,21 +9,20 @@ import type { IOrderRepository } from "../repositories/interfaces/order.reposito
 import type { Cart, CartItem } from "@/lib/core/domain/cart";
 import type { IPaymentService } from "./interfaces/payment.service";
 import { UrlService } from "./url.service";
+import type { IUrlService } from "./interfaces/url.service";
 
 @injectable()
 export class PaymentService implements IPaymentService {
-  private readonly urlService: UrlService;
-
   constructor(
     @inject("PaymentRepository")
     private readonly paymentRepository: IPaymentRepository,
     @inject("CartRepository")
     private readonly cartRepository: ICartRepository,
     @inject("OrderRepository")
-    private readonly orderRepository: IOrderRepository
-  ) {
-    this.urlService = container.resolve(UrlService);
-  }
+    private readonly orderRepository: IOrderRepository,
+    @inject("UrlService")
+    private readonly urlService: IUrlService
+  ) {}
 
   private static isValidUrl(url: string): boolean {
     try {
@@ -34,7 +33,7 @@ export class PaymentService implements IPaymentService {
     }
   }
 
-  private static getFullImageUrl(imageUrl: string | null): string | undefined {
+  private getFullImageUrl(imageUrl: string | null): string | undefined {
     if (!imageUrl) return undefined;
 
     // 既に完全なURLの場合はそのまま返す
@@ -43,8 +42,7 @@ export class PaymentService implements IPaymentService {
     }
 
     // 相対パスの場合は、urlServiceを使用して完全なURLを生成
-    const urlService = container.resolve(UrlService);
-    const baseUrl = urlService.getBaseUrl().replace(/\/$/, "");
+    const baseUrl = this.urlService.getBaseUrl().replace(/\/$/, "");
     if (!baseUrl) return undefined;
 
     const fullUrl = `${baseUrl}${
