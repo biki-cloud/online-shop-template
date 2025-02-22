@@ -53,7 +53,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-This will create the following user and team:
+This will create the following user:
 
 - User: `test@example.com`
 - Password: `password123`
@@ -105,16 +105,59 @@ When you're ready to deploy your SaaS application to production, follow these st
 
 In your Vercel project settings (or during deployment), add all the necessary environment variables. Make sure to update the values for the production environment, including:
 
-1. `BASE_URL`: Set this to your production domain.
-2. `STRIPE_SECRET_KEY`: Use your Stripe secret key for the production environment.
-3. `STRIPE_WEBHOOK_SECRET`: Use the webhook secret from the production webhook you created in step 1.
-4. `POSTGRES_URL`: Set this to your production database URL.
-5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
+1. `BASE_URL`:
 
-## Other Templates
+   - 説明: アプリケーションのベース URL
+   - 開発環境: `http://localhost:3000`
+   - 本番環境: デプロイ後のドメイン（例: `https://your-app.vercel.app`）
 
-While this template is intentionally minimal and to be used as a learning resource, there are other paid versions in the community which are more full-featured:
+2. `STRIPE_SECRET_KEY`:
 
-- https://achromatic.dev
-- https://shipfa.st
-- https://makerkit.dev
+   - 説明: Stripe のシークレットキー（サーバーサイドでのみ使用）
+   - 取得方法: [Stripe ダッシュボード](https://dashboard.stripe.com/apikeys) → 「API キー」→ 「シークレットキー」
+   - 注意: 本番環境では`sk_live`で始まるキーを使用
+
+3. `STRIPE_WEBHOOK_SECRET`:
+
+   - 説明: Stripe のウェブフックシークレット（支払いイベントの検証用）
+   - 取得方法:
+     1. [Stripe ダッシュボード](https://dashboard.stripe.com/webhooks) → 「Webhooks」→ 「エンドポイントを追加」
+     2. エンドポイント URL（本番）: `https://your-app.vercel.app/api/stripe/webhook`
+     3. イベント選択: `checkout.session.completed`, `customer.subscription.updated`など
+     4. 作成後に表示される`whsec_`で始まるシークレットをコピー
+
+4. `POSTGRES_URL`:
+
+   - 説明: PostgreSQL データベースの接続 URL
+   - 開発環境: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+   - 本番環境: Supabase プロジェクトの接続文字列
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → Database → Connection string → URI
+
+5. `AUTH_SECRET`:
+
+   - 説明: NextAuth.js 認証用のシークレットキー
+   - 生成方法: ターミナルで`openssl rand -base64 32`を実行
+   - 要件: 32 文字以上のランダムな文字列
+
+6. `NEXT_PUBLIC_SUPABASE_URL`:
+
+   - 説明: Supabase のプロジェクト URL
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → API → Project URL
+   - 開発環境: `http://127.0.0.1:54321`
+
+7. `NEXT_PUBLIC_SUPABASE_ANON_KEY`:
+
+   - 説明: Supabase の匿名認証用キー
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → API → Project API keys → `anon public`
+
+8. `SUPABASE_SERVICE_ROLE_KEY`:
+
+   - 説明: Supabase の管理者権限用キー（サーバーサイドでのみ使用）
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → API → Project API keys → `service_role secret`
+   - 注意: 絶対に公開しないでください
+
+9. `NEXT_PUBLIC_STORAGE_URL`:
+   - 説明: Supabase のストレージ（S3 互換）の URL
+   - 開発環境: `http://127.0.0.1:54321/storage/v1/s3`
+   - 本番環境: `https://[PROJECT_ID].supabase.co/storage/v1/s3`
+   - 取得方法: Supabase ダッシュボード → Storage
