@@ -10,15 +10,13 @@ if (!process.env.AUTH_SECRET) {
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NewUser } from "@/lib/infrastructure/db/schema";
-import { createHash, randomBytes, scryptSync } from "crypto";
+import { hash, verify } from "@node-rs/argon2";
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 
 // パスワードのハッシュ化関数
 export async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
+  return hash(password);
 }
 
 // パスワードの比較関数
@@ -26,9 +24,7 @@ export async function comparePasswords(
   plainTextPassword: string,
   hashedPassword: string
 ): Promise<boolean> {
-  const [salt, hash] = hashedPassword.split(":");
-  const newHash = scryptSync(plainTextPassword, salt, 64).toString("hex");
-  return hash === newHash;
+  return verify(hashedPassword, plainTextPassword);
 }
 
 type SessionData = {
