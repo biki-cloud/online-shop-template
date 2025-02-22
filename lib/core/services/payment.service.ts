@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import "reflect-metadata";
-import { inject, injectable } from "tsyringe";
+import { inject, injectable, container } from "tsyringe";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import type { IPaymentRepository } from "../repositories/interfaces/payment.repository";
@@ -8,9 +8,12 @@ import type { ICartRepository } from "../repositories/interfaces/cart.repository
 import type { IOrderRepository } from "../repositories/interfaces/order.repository";
 import type { Cart, CartItem } from "@/lib/core/domain/cart";
 import type { IPaymentService } from "./interfaces/payment.service";
+import { UrlService } from "./url.service";
 
 @injectable()
 export class PaymentService implements IPaymentService {
+  private readonly urlService: UrlService;
+
   constructor(
     @inject("PaymentRepository")
     private readonly paymentRepository: IPaymentRepository,
@@ -18,7 +21,9 @@ export class PaymentService implements IPaymentService {
     private readonly cartRepository: ICartRepository,
     @inject("OrderRepository")
     private readonly orderRepository: IOrderRepository
-  ) {}
+  ) {
+    this.urlService = container.resolve(UrlService);
+  }
 
   private static isValidUrl(url: string): boolean {
     try {
@@ -37,8 +42,9 @@ export class PaymentService implements IPaymentService {
       return imageUrl;
     }
 
-    // 相対パスの場合は、BASE_URLと組み合わせて完全なURLを生成
-    const baseUrl = process.env.BASE_URL?.replace(/\/$/, "");
+    // 相対パスの場合は、urlServiceを使用して完全なURLを生成
+    const urlService = container.resolve(UrlService);
+    const baseUrl = urlService.getBaseUrl().replace(/\/$/, "");
     if (!baseUrl) return undefined;
 
     const fullUrl = `${baseUrl}${

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { inject, injectable } from "tsyringe";
+import { inject, injectable, container } from "tsyringe";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
@@ -9,6 +9,7 @@ import { BaseRepository } from "./base.repository";
 import { eq } from "drizzle-orm";
 import { getFullImageUrl } from "@/lib/shared/utils/url";
 import { PgColumn } from "drizzle-orm/pg-core";
+import { UrlService } from "@/lib/core/services/url.service";
 
 class PaymentError extends Error {
   constructor(message: string) {
@@ -22,11 +23,14 @@ export class PaymentRepository
   extends BaseRepository<Order>
   implements IPaymentRepository
 {
+  private readonly urlService: UrlService;
+
   constructor(
     @inject("Database")
     protected readonly db: Database
   ) {
     super(db, orders);
+    this.urlService = container.resolve(UrlService);
   }
 
   protected get idColumn(): PgColumn<any> {
@@ -157,8 +161,8 @@ export class PaymentRepository
         payment_method_types: ["card"],
         line_items: lineItems,
         mode: "payment",
-        success_url: `${process.env.BASE_URL}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.BASE_URL}/cart`,
+        success_url: `${this.urlService.getBaseUrl()}/api/stripe/checkout?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${this.urlService.getBaseUrl()}/cart`,
         metadata: {
           orderId: order.id.toString(),
         },
