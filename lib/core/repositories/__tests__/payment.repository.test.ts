@@ -5,6 +5,7 @@ import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
 import { eq } from "drizzle-orm";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
+import { UrlService } from "@/lib/core/services/url.service";
 
 // Stripeのモック
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({
@@ -24,11 +25,18 @@ jest.mock("@/lib/infrastructure/payments/stripe", () => ({
   },
 }));
 
+// UrlServiceのモック
+jest.mock("@/lib/core/services/url.service", () => ({
+  UrlService: jest.fn().mockImplementation(() => ({
+    getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
+  })),
+}));
+
 // process.envのモック
 const originalEnv = process.env;
 beforeEach(() => {
   jest.resetModules();
-  process.env = { ...originalEnv, BASE_URL: "http://localhost:3000" };
+  process.env = { ...originalEnv };
 });
 afterAll(() => {
   process.env = originalEnv;
