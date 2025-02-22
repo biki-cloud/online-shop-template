@@ -2,15 +2,19 @@ import { notFound } from "next/navigation";
 import { getProduct } from "@/app/actions/product";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
 import { AdminProductForm } from "@/components/admin/products/product-form";
+import { ReactElement } from "react";
 
-interface Props {
-  params: {
+interface SearchParamsProps {
+  params: Promise<{
     id: string;
-  };
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function AdminProductEditPage({ params }: Props) {
-  const resolvedParams = await Promise.resolve(params);
+export default async function AdminProductEditPage({
+  params,
+}: SearchParamsProps): Promise<ReactElement> {
+  const resolvedParams = await params;
 
   if (!resolvedParams?.id || isNaN(Number(resolvedParams.id))) {
     notFound();

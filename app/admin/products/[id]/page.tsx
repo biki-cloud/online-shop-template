@@ -2,19 +2,23 @@ import { notFound } from "next/navigation";
 import { getProduct } from "@/app/actions/product";
 import { AdminProductDetail } from "@/components/admin/products/product-detail";
 import { checkAdmin } from "@/lib/infrastructure/auth/middleware";
+import { ReactElement } from "react";
 
-interface Props {
-  params: {
+interface SearchParamsProps {
+  params: Promise<{
     id: string;
-  };
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function AdminProductDetailPage(props: Props) {
+export default async function AdminProductDetailPage({
+  params,
+}: SearchParamsProps): Promise<ReactElement> {
   try {
-    const params = await Promise.resolve(props.params);
+    const resolvedParams = await params;
     const [isAdmin, product] = await Promise.all([
       checkAdmin(),
-      getProduct(Number(params.id)),
+      getProduct(Number(resolvedParams.id)),
     ]);
 
     if (!isAdmin || !product) {
