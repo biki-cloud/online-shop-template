@@ -1,22 +1,27 @@
 "use server";
 
-import { container } from "tsyringe";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/app/actions/user";
+import {
+  serverNotificationContainer,
+  initializeServerNotificationContainer,
+} from "@/lib/di/server-notification-container";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
+import type { PushSubscriptionService } from "@/lib/core/services/push-subscription.service";
 import type { WebPushSubscription } from "@/lib/core/repositories/interfaces/push-subscription.repository";
-import { IPushSubscriptionService } from "@/lib/core/services/interfaces/push-subscription.service";
 
 export async function savePushSubscription(subscription: WebPushSubscription) {
   try {
     const user = await getCurrentUser();
     if (!user) {
-      throw new Error("ログインが必要です");
+      throw new Error("認証が必要です");
     }
 
-    const service = container.resolve<IPushSubscriptionService>(
-      NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
-    );
+    initializeServerNotificationContainer();
+    const service =
+      serverNotificationContainer.resolve<PushSubscriptionService>(
+        NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
+      );
 
     await service.saveSubscription(user.id, subscription);
     revalidatePath("/");
@@ -31,12 +36,14 @@ export async function deletePushSubscription() {
   try {
     const user = await getCurrentUser();
     if (!user) {
-      throw new Error("ログインが必要です");
+      throw new Error("認証が必要です");
     }
 
-    const service = container.resolve<IPushSubscriptionService>(
-      NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
-    );
+    initializeServerNotificationContainer();
+    const service =
+      serverNotificationContainer.resolve<PushSubscriptionService>(
+        NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
+      );
 
     await service.deleteSubscription(user.id);
     revalidatePath("/");
@@ -51,12 +58,14 @@ export async function getPushSubscription() {
   try {
     const user = await getCurrentUser();
     if (!user) {
-      throw new Error("ログインが必要です");
+      throw new Error("認証が必要です");
     }
 
-    const service = container.resolve<IPushSubscriptionService>(
-      NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
-    );
+    initializeServerNotificationContainer();
+    const service =
+      serverNotificationContainer.resolve<PushSubscriptionService>(
+        NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE
+      );
 
     const subscription = await service.getSubscription(user.id);
     return { success: true, subscription };

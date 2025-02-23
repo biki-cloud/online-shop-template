@@ -8,7 +8,7 @@ import type { NotificationPayload } from "@/lib/core/domain/notification";
 import {
   notificationContainer,
   initializeNotificationContainer,
-} from "@/lib/di/notification-container";
+} from "@/lib/di/client-notification-container";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 import {
   savePushSubscription,

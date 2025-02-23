@@ -6,6 +6,7 @@ import {
   cartItems,
   orders,
   orderItems,
+  pushSubscriptions,
 } from "./schema";
 import { hash } from "bcryptjs";
 import type { NewUser, NewProduct } from "./schema";
@@ -19,6 +20,7 @@ async function clearTables() {
   await db.delete(orders);
   await db.delete(cartItems);
   await db.delete(carts);
+  await db.delete(pushSubscriptions);
   await db.delete(products);
   await db.delete(users);
 
@@ -30,6 +32,7 @@ async function clearTables() {
     ALTER SEQUENCE cart_items_id_seq RESTART WITH 1;
     ALTER SEQUENCE orders_id_seq RESTART WITH 1;
     ALTER SEQUENCE order_items_id_seq RESTART WITH 1;
+    ALTER SEQUENCE push_subscriptions_id_seq RESTART WITH 1;
   `);
 
   console.log("✅ テーブルの内容とシーケンスをリセットしました");
