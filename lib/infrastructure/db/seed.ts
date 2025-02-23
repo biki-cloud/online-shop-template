@@ -10,7 +10,6 @@ import {
 } from "./schema";
 import { hash } from "bcryptjs";
 import type { NewUser, NewProduct } from "./schema";
-import { sql } from "drizzle-orm";
 
 async function clearTables() {
   console.log("🗑️ テーブルの内容を削除中...");
@@ -24,18 +23,7 @@ async function clearTables() {
   await db.delete(products);
   await db.delete(users);
 
-  // シーケンスをリセット
-  await db.execute(sql`
-    ALTER SEQUENCE users_id_seq RESTART WITH 1;
-    ALTER SEQUENCE products_id_seq RESTART WITH 1;
-    ALTER SEQUENCE carts_id_seq RESTART WITH 1;
-    ALTER SEQUENCE cart_items_id_seq RESTART WITH 1;
-    ALTER SEQUENCE orders_id_seq RESTART WITH 1;
-    ALTER SEQUENCE order_items_id_seq RESTART WITH 1;
-    ALTER SEQUENCE push_subscriptions_id_seq RESTART WITH 1;
-  `);
-
-  console.log("✅ テーブルの内容とシーケンスをリセットしました");
+  console.log("✅ テーブルの内容をリセットしました");
 }
 
 async function seedUsers() {

@@ -1,10 +1,10 @@
 import {
   pgTable,
   serial,
+  integer,
   varchar,
   text,
   timestamp,
-  integer,
   decimal,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
