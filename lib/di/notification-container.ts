@@ -19,9 +19,13 @@ import "reflect-metadata";
 import { container } from "tsyringe";
 import type { INotificationRepository } from "@/lib/core/repositories/interfaces/notification.repository";
 import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
+import type { IPushSubscriptionRepository } from "@/lib/core/repositories/interfaces/push-subscription.repository";
 import { NotificationRepository } from "@/lib/core/repositories/notification.repository";
 import { NotificationService } from "@/lib/core/services/notification.service";
+import { PushSubscriptionRepository } from "@/lib/core/repositories/push-subscription.repository";
+import { PushSubscriptionService } from "@/lib/core/services/push-subscription.service";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
+import { db } from "@/lib/infrastructure/db/drizzle";
 
 let isNotificationInitialized = false;
 
@@ -31,6 +35,11 @@ const notificationContainer = container.createChildContainer();
 export function initializeNotificationContainer() {
   if (isNotificationInitialized) return;
 
+  // データベースインスタンスの登録
+  notificationContainer.register("Database", {
+    useValue: db,
+  });
+
   notificationContainer.registerSingleton<INotificationRepository>(
     NOTIFICATION_TOKENS.REPOSITORY,
     NotificationRepository
@@ -38,6 +47,14 @@ export function initializeNotificationContainer() {
   notificationContainer.registerSingleton<INotificationService>(
     NOTIFICATION_TOKENS.SERVICE,
     NotificationService
+  );
+  notificationContainer.registerSingleton<IPushSubscriptionRepository>(
+    NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_REPOSITORY,
+    PushSubscriptionRepository
+  );
+  notificationContainer.registerSingleton<PushSubscriptionService>(
+    NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE,
+    PushSubscriptionService
   );
 
   isNotificationInitialized = true;
