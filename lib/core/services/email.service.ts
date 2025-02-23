@@ -1,17 +1,14 @@
-"use server";
-
 import { injectable } from "tsyringe";
 import nodemailer from "nodemailer";
 import path from "path";
+import fs from "fs/promises";
+import ejs from "ejs";
 import type { EmailOptions } from "@/lib/core/domain/email";
 import type { IEmailService } from "./interfaces/email.service";
-import type Email from "email-templates";
-import { container } from "@/lib/di/container";
 
 @injectable()
-export class EmailService implements IEmailService {
+export class EmailServiceImpl implements IEmailService {
   private transporter: nodemailer.Transporter;
-  private emailTemplate: any;
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -23,32 +20,6 @@ export class EmailService implements IEmailService {
         pass: process.env.SMTP_PASS,
       },
     });
-  }
-
-  private async initEmailTemplate() {
-    if (!this.emailTemplate) {
-      const { default: EmailTemplate } = await import("email-templates");
-      this.emailTemplate = new EmailTemplate({
-        message: {
-          from: process.env.SMTP_FROM,
-        },
-        transport: this.transporter,
-        views: {
-          root: path.join(process.cwd(), "emails"),
-          options: {
-            extension: "ejs",
-          },
-        },
-        juice: true,
-        juiceResources: {
-          preserveImportant: true,
-          webResources: {
-            relativeTo: path.join(process.cwd(), "emails"),
-          },
-        },
-      });
-    }
-    return this.emailTemplate;
   }
 
   async send(options: EmailOptions): Promise<void> {
@@ -71,34 +42,41 @@ export class EmailService implements IEmailService {
     });
   }
 
+  private async loadTemplate(
+    templateName: string,
+    type: string
+  ): Promise<string> {
+    const templatePath = path.join(
+      process.cwd(),
+      "emails",
+      templateName,
+      `${type}.ejs`
+    );
+    return fs.readFile(templatePath, "utf-8");
+  }
+
   async sendTemplate(
     templateName: string,
     data: Record<string, any>,
     options: Omit<EmailOptions, "template">
   ): Promise<void> {
-    const emailTemplate = await this.initEmailTemplate();
-    await emailTemplate.send({
-      template: templateName,
-      message: {
-        to: options.to,
-        from: options.from,
-        attachments: options.attachments,
-      },
-      locals: data,
+    // テンプレートの読み込み
+    const [subjectTemplate, htmlTemplate] = await Promise.all([
+      this.loadTemplate(templateName, "subject"),
+      this.loadTemplate(templateName, "html"),
+    ]);
+
+    // テンプレートのレンダリング
+    const subject = ejs.render(subjectTemplate, data).trim();
+    const html = ejs.render(htmlTemplate, data);
+
+    // メールの送信
+    await this.transporter.sendMail({
+      from: options.from || process.env.SMTP_FROM,
+      to: options.to,
+      subject: options.subject || subject,
+      html,
+      attachments: options.attachments,
     });
   }
-}
-
-export async function sendEmail(options: EmailOptions): Promise<void> {
-  const emailService = container.resolve<IEmailService>("EmailService");
-  await emailService.send(options);
-}
-
-export async function sendTemplateEmail(
-  templateName: string,
-  data: Record<string, any>,
-  options: Omit<EmailOptions, "template">
-): Promise<void> {
-  const emailService = container.resolve<IEmailService>("EmailService");
-  await emailService.sendTemplate(templateName, data, options);
 }

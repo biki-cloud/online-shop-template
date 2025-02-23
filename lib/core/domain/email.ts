@@ -13,13 +13,20 @@ export interface EmailTemplate {
 }
 
 export interface EmailOptions {
-  to: EmailAddress | EmailAddress[];
-  from?: EmailAddress;
+  to: string | string[];
+  from?: string;
   subject?: string;
   text?: string;
   html?: string;
-  template?: EmailTemplate;
-  attachments?: EmailAttachment[];
+  attachments?: Array<{
+    filename: string;
+    content: Buffer | string;
+    contentType?: string;
+  }>;
+  template?: {
+    name: string;
+    data: Record<string, any>;
+  };
 }
 
 // メールテンプレート名の定義

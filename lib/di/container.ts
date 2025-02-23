@@ -25,7 +25,7 @@ import { db } from "@/lib/infrastructure/db/drizzle";
 import { UrlService } from "@/lib/core/services/url.service";
 import { IUrlService } from "../core/services/interfaces/url.service";
 import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
-import { EmailServiceImpl } from "@/lib/core/services/impl/email.service.impl";
+import { EmailServiceImpl } from "@/lib/core/services/email.service";
 
 let isInitialized = false;
 

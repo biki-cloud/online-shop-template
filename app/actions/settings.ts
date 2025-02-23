@@ -32,7 +32,6 @@ export async function testEmail(data: z.infer<typeof testEmailSchema>) {
     to: validatedData.email,
     template: {
       name: EmailTemplates.WELCOME,
-      subject: "ようこそ - メール設定テスト",
       data: {
         name: "テストユーザー",
         verificationUrl: "https://example.com/verify",
