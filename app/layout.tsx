@@ -6,7 +6,7 @@ import { UserProvider } from "@/lib/infrastructure/auth";
 import { getCurrentUser } from "@/app/actions/user";
 import { Nav } from "@/components/layout/nav";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Next.js SaaS Starter",
