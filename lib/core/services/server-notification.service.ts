@@ -32,11 +32,11 @@ export class NotificationService implements INotificationService {
     const contactEmail =
       process.env.NEXT_PUBLIC_CONTACT_EMAIL || "admin@example.com";
 
-    console.log("🔑 VAPID設定を初期化します", {
-      hasPublicKey: !!publicKey,
-      hasPrivateKey: !!privateKey,
-      contactEmail,
-    });
+    // console.log("🔑 VAPID設定を初期化します", {
+    //   hasPublicKey: !!publicKey,
+    //   hasPrivateKey: !!privateKey,
+    //   contactEmail,
+    // });
 
     if (publicKey && privateKey) {
       this.vapidDetails = {
@@ -49,7 +49,7 @@ export class NotificationService implements INotificationService {
         this.vapidDetails.publicKey,
         this.vapidDetails.privateKey
       );
-      console.log("✅ VAPID設定が完了しました");
+      // console.log("✅ VAPID設定が完了しました");
     } else {
       console.warn("⚠️ VAPID keysが正しく設定されていません");
     }
@@ -85,10 +85,10 @@ export class NotificationService implements INotificationService {
 
   // 実際に使用するメソッド
   async notifyNewProduct(product: Product): Promise<void> {
-    console.log("🔔 新商品通知の送信を開始します", {
-      productId: product.id,
-      productName: product.name,
-    });
+    // console.log("🔔 新商品通知の送信を開始します", {
+    //   productId: product.id,
+    //   productName: product.name,
+    // });
 
     if (!this.vapidDetails) {
       console.error("❌ VAPID設定が見つかりません");
@@ -97,12 +97,12 @@ export class NotificationService implements INotificationService {
 
     const subscriptions =
       await this.pushSubscriptionService.getAllSubscriptions();
-    console.log("📋 購読情報を取得しました", {
-      subscriptionCount: subscriptions.length,
-    });
+    // console.log("📋 購読情報を取得しました", {
+    //   subscriptionCount: subscriptions.length,
+    // });
 
     if (!subscriptions.length) {
-      console.log("ℹ️ アクティブな購読が見つかりません");
+      // console.log("ℹ️ アクティブな購読が見つかりません");
       return;
     }
 
@@ -123,16 +123,16 @@ export class NotificationService implements INotificationService {
       ],
     });
 
-    console.log("📤 通知ペイロードを作成しました", { payload });
+    // console.log("📤 通知ペイロードを作成しました", { payload });
 
     const errors: Error[] = [];
     await Promise.all(
       subscriptions.map(async (subscription) => {
         try {
-          console.log("📨 通知を送信します", {
-            endpoint: subscription.endpoint,
-            userId: subscription.userId,
-          });
+          // console.log("📨 通知を送信します", {
+          //   endpoint: subscription.endpoint,
+          //   userId: subscription.userId,
+          // });
 
           await webPush.sendNotification(
             {
@@ -144,10 +144,10 @@ export class NotificationService implements INotificationService {
             },
             payload
           );
-          console.log("✅ 通知を送信しました", {
-            endpoint: subscription.endpoint,
-            userId: subscription.userId,
-          });
+          // console.log("✅ 通知を送信しました", {
+          //   endpoint: subscription.endpoint,
+          //   userId: subscription.userId,
+          // });
         } catch (error) {
           if (error instanceof Error) {
             errors.push(error);
