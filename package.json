@@ -12,7 +12,7 @@
     "db:migrate": "npx tsx lib/infrastructure/db/migrate.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:reset": "npx tsx lib/infrastructure/db/reset.ts && pnpm db:seed",
+    "db:reset": "drizzle-kit generate && drizzle-kit push && pnpm db:seed",
     "db:generate:prd": "dotenv -e .env.prd  drizzle-kit generate",
     "db:migrate:prd": "dotenv -e .env.prd  npx tsx lib/infrastructure/db/migrate.ts",
     "db:push:prd": "dotenv -e .env.prd  drizzle-kit push",
