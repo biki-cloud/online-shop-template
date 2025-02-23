@@ -44,15 +44,29 @@ export async function createProduct(
   revalidatePath("/admin/products");
 
   try {
+    console.log("🔔 新商品の通知処理を開始します:", {
+      productId: product.id,
+      productName: product.name,
+    });
+
     // 新商品の通知を送信
     initializeServerNotificationContainer();
+    console.log("✅ サーバー通知コンテナを初期化しました");
+
     const notificationService =
       serverNotificationContainer.resolve<NotificationService>(
         NOTIFICATION_TOKENS.SERVICE
       );
+    console.log("✅ 通知サービスを取得しました");
+
     await notificationService.notifyNewProduct(product);
+    console.log("✅ 通知処理が完了しました");
   } catch (error) {
-    console.error("通知の送信中にエラーが発生しました:", error);
+    console.error("❌ 通知の送信中にエラーが発生しました:", {
+      error,
+      productId: product.id,
+      productName: product.name,
+    });
     // 通知の失敗は商品作成には影響を与えない
   }
 
