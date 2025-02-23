@@ -19,7 +19,7 @@
 
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { NotificationRepository } from "@/lib/core/repositories/notification.repository";
+import { NotificationRepository } from "@/lib/core/repositories/client-notification.repository";
 import { ClientNotificationService } from "@/lib/core/services/client-notification.service";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
