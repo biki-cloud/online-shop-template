@@ -20,6 +20,8 @@ import { container } from "tsyringe";
 import type { IPushSubscriptionRepository } from "@/lib/core/repositories/interfaces/push-subscription.repository";
 import { PushSubscriptionRepository } from "@/lib/core/repositories/push-subscription.repository";
 import { PushSubscriptionService } from "@/lib/core/services/push-subscription.service";
+import { NotificationService } from "@/lib/core/services/server-notification.service";
+import { ServerNotificationRepository } from "@/lib/core/repositories/server-notification.repository";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 import { db } from "@/lib/infrastructure/db/drizzle";
 
@@ -44,6 +46,16 @@ export function initializeServerNotificationContainer() {
   serverNotificationContainer.registerSingleton<PushSubscriptionService>(
     NOTIFICATION_TOKENS.PUSH_SUBSCRIPTION_SERVICE,
     PushSubscriptionService
+  );
+
+  // 通知サービスの登録
+  serverNotificationContainer.registerSingleton(
+    NOTIFICATION_TOKENS.REPOSITORY,
+    ServerNotificationRepository
+  );
+  serverNotificationContainer.registerSingleton(
+    NOTIFICATION_TOKENS.SERVICE,
+    NotificationService
   );
 
   isServerNotificationInitialized = true;

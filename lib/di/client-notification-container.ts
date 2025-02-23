@@ -15,29 +15,29 @@
  *    - 機能の追加・変更時の影響範囲を限定的に
  */
 
+"use client";
+
 import "reflect-metadata";
 import { container } from "tsyringe";
-import type { INotificationRepository } from "@/lib/core/repositories/interfaces/notification.repository";
-import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
 import { NotificationRepository } from "@/lib/core/repositories/notification.repository";
-import { NotificationService } from "@/lib/core/services/notification.service";
+import { ClientNotificationService } from "@/lib/core/services/client-notification.service";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 let isNotificationInitialized = false;
 
-// 通知機能専用のコンテナ（メインコンテナの子コンテナとして作成）
+// クライアントサイドの通知機能専用のコンテナ
 const notificationContainer = container.createChildContainer();
 
 export function initializeNotificationContainer() {
   if (isNotificationInitialized) return;
 
-  notificationContainer.registerSingleton<INotificationRepository>(
+  notificationContainer.registerSingleton(
     NOTIFICATION_TOKENS.REPOSITORY,
     NotificationRepository
   );
-  notificationContainer.registerSingleton<INotificationService>(
+  notificationContainer.registerSingleton(
     NOTIFICATION_TOKENS.SERVICE,
-    NotificationService
+    ClientNotificationService
   );
 
   isNotificationInitialized = true;

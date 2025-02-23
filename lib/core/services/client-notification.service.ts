@@ -8,7 +8,7 @@ import type { INotificationRepository } from "../repositories/interfaces/notific
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 @injectable()
-export class NotificationService implements INotificationService {
+export class ClientNotificationService implements INotificationService {
   constructor(
     @inject(NOTIFICATION_TOKENS.REPOSITORY)
     private repository: INotificationRepository
