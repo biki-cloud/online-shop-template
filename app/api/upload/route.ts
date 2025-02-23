@@ -13,7 +13,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("uploadFile s3", file);
     const { url } = await uploadFile(file);
     return NextResponse.json({ url });
   } catch (error) {
