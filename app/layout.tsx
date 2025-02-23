@@ -16,11 +16,11 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     apple: "/icon512_rounded.png",
   },
-  themeColor: "#4F46E5",
 };
 
 export const viewport: Viewport = {
   maximumScale: 1,
+  themeColor: "#4F46E5",
 };
 
 const manrope = Manrope({ subsets: ["latin"] });

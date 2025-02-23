@@ -6,4 +6,6 @@
 export const NOTIFICATION_TOKENS = {
   REPOSITORY: "INotificationRepository",
   SERVICE: "INotificationService",
+  PUSH_SUBSCRIPTION_REPOSITORY: "IPushSubscriptionRepository",
+  PUSH_SUBSCRIPTION_SERVICE: "IPushSubscriptionService",
 } as const;

@@ -8,8 +8,13 @@ import type { NotificationPayload } from "@/lib/core/domain/notification";
 import {
   notificationContainer,
   initializeNotificationContainer,
-} from "@/lib/di/notification-container";
+} from "@/lib/di/client-notification-container";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
+import {
+  savePushSubscription,
+  deletePushSubscription,
+  getPushSubscription,
+} from "@/app/actions/push-subscription";
 
 export function useNotification() {
   const [notificationService, setNotificationService] =
@@ -52,11 +57,21 @@ export function useNotification() {
           return;
         }
 
-        const storedSubscription =
-          await notificationService.getStoredSubscription();
-        if (storedSubscription) {
-          setSubscription(storedSubscription);
-          setIsSubscribed(true);
+        // サーバーから購読情報を取得
+        const { success, subscription: serverSubscription } =
+          await getPushSubscription();
+        if (success && serverSubscription) {
+          const registration = await navigator.serviceWorker.ready;
+          const browserSubscription =
+            await registration.pushManager.getSubscription();
+
+          if (
+            browserSubscription &&
+            browserSubscription.endpoint === serverSubscription.endpoint
+          ) {
+            setSubscription(browserSubscription);
+            setIsSubscribed(true);
+          }
         }
       } catch (error) {
         console.error("通知の初期化中にエラーが発生しました:", error);
@@ -91,11 +106,34 @@ export function useNotification() {
 
       const newSubscription = await notificationService.subscribe();
       if (newSubscription) {
-        setSubscription(newSubscription);
-        setIsSubscribed(true);
-        toast.success("プッシュ通知を設定しました", {
-          description: "テスト通知を送信できます",
+        // サーバーに購読情報を保存
+        const { success, error } = await savePushSubscription({
+          endpoint: newSubscription.endpoint,
+          keys: {
+            p256dh: btoa(
+              String.fromCharCode(
+                ...new Uint8Array(newSubscription.getKey("p256dh")!)
+              )
+            ),
+            auth: btoa(
+              String.fromCharCode(
+                ...new Uint8Array(newSubscription.getKey("auth")!)
+              )
+            ),
+          },
         });
+
+        if (success) {
+          setSubscription(newSubscription);
+          setIsSubscribed(true);
+          toast.success("プッシュ通知を設定しました", {
+            description: "テスト通知を送信できます",
+          });
+        } else {
+          toast.error("通知の設定に失敗しました", {
+            description: error,
+          });
+        }
       }
     } catch (error) {
       console.error("プッシュ通知サブスクリプションエラー:", error);
@@ -112,11 +150,20 @@ export function useNotification() {
       setIsLoading(true);
       const success = await notificationService.unsubscribe(subscription);
       if (success) {
-        setSubscription(null);
-        setIsSubscribed(false);
-        toast.success("通知をオフにしました", {
-          description: "プッシュ通知は届かなくなります",
-        });
+        // サーバーから購読情報を削除
+        const { success: deleteSuccess, error } =
+          await deletePushSubscription();
+        if (deleteSuccess) {
+          setSubscription(null);
+          setIsSubscribed(false);
+          toast.success("通知をオフにしました", {
+            description: "プッシュ通知は届かなくなります",
+          });
+        } else {
+          toast.error("通知の解除に失敗しました", {
+            description: error,
+          });
+        }
       }
     } catch (error) {
       console.error("通知解除エラー:", error);
