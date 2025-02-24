@@ -43,5 +43,8 @@ supabase ディレクトリはローカルの supabase ディレクトリなの�
 将来的に必要になった時点で管理画面を実装
 
 - アーキテクチャの名前
+  - .impl.ts と.interface.ts の名前変更
+  - server か client かまたは両方で動作するのかを示したい
 - シーケンス図
--
+- setup.ts のリファクタリング
+- auth を supabase の auth を使用する。
