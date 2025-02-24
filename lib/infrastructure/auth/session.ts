@@ -10,61 +10,16 @@ if (!process.env.AUTH_SECRET) {
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NewUser } from "@/lib/infrastructure/db/schema";
+import { hash, compare } from "bcryptjs";
 
 const key = new TextEncoder().encode(process.env.AUTH_SECRET);
 
-// PBKDF2のパラメータ
-const ITERATIONS = 100000;
-const HASH_LENGTH = 32;
-const SALT_LENGTH = 16;
-
-// バイト配列を16進数文字列に変換
-function bytesToHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-// 16進数文字列をバイト配列に変換
-function hexToBytes(hex: string): Uint8Array {
-  const bytes = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < hex.length; i += 2) {
-    bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
-  }
-  return bytes;
-}
+// bcryptのソルトラウンド
+const SALT_ROUNDS = 12;
 
 // パスワードのハッシュ化関数
 export async function hashPassword(password: string): Promise<string> {
-  // ソルトを生成
-  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
-
-  // パスワードをUint8Arrayに変換
-  const passwordBuffer = new TextEncoder().encode(password);
-
-  // PBKDF2でハッシュ化
-  const keyBuffer = await crypto.subtle.importKey(
-    "raw",
-    passwordBuffer,
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits"]
-  );
-
-  const hash = await crypto.subtle.deriveBits(
-    {
-      name: "PBKDF2",
-      salt,
-      iterations: ITERATIONS,
-      hash: "SHA-256",
-    },
-    keyBuffer,
-    HASH_LENGTH * 8
-  );
-
-  // ソルトとハッシュを結合して16進数文字列として保存
-  const hashBytes = new Uint8Array(hash);
-  return `${bytesToHex(salt)}:${bytesToHex(hashBytes)}`;
+  return await hash(password, SALT_ROUNDS);
 }
 
 // パスワードの比較関数
@@ -73,34 +28,7 @@ export async function comparePasswords(
   hashedPassword: string
 ): Promise<boolean> {
   try {
-    // ソルトとハッシュを分離
-    const [saltHex, hashHex] = hashedPassword.split(":");
-    const salt = hexToBytes(saltHex);
-
-    // 入力されたパスワードをハッシュ化
-    const passwordBuffer = new TextEncoder().encode(plainTextPassword);
-    const keyBuffer = await crypto.subtle.importKey(
-      "raw",
-      passwordBuffer,
-      { name: "PBKDF2" },
-      false,
-      ["deriveBits"]
-    );
-
-    const newHash = await crypto.subtle.deriveBits(
-      {
-        name: "PBKDF2",
-        salt,
-        iterations: ITERATIONS,
-        hash: "SHA-256",
-      },
-      keyBuffer,
-      HASH_LENGTH * 8
-    );
-
-    // ハッシュを比較
-    const newHashHex = bytesToHex(new Uint8Array(newHash));
-    return newHashHex === hashHex;
+    return await compare(plainTextPassword, hashedPassword);
   } catch (error) {
     console.error("Password comparison error:", error);
     return false;
