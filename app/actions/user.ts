@@ -5,7 +5,7 @@ import type {
   CreateUserInput,
   UpdateUserInput,
 } from "@/lib/core/domain/user";
-import { getSessionService, getUserService } from "@/lib/di/container";
+import { getAuthService, getUserService } from "@/lib/di/container";
 
 export async function getUserById(id: number): Promise<User | null> {
   const userService = getUserService();
@@ -39,15 +39,12 @@ export async function validateUserPassword(
   email: string,
   password: string
 ): Promise<User | null> {
-  const userService = getUserService();
-  return await userService.validatePassword(email, password);
+  const authService = getAuthService();
+  const user = await authService.signIn(email, password);
+  return user;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const sessionService = getSessionService();
-  const session = await sessionService.get();
-  if (!session) return null;
-
-  const userService = getUserService();
-  return await userService.findById(session.userId);
+  const authService = getAuthService();
+  return await authService.getSessionUser();
 }

@@ -5,8 +5,7 @@ import {
   getStripeProducts,
 } from "../payments";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
-import { getContainer } from "@/lib/di/container";
+import { getContainer, getSessionService } from "@/lib/di/container";
 import type Stripe from "stripe";
 
 // モックの設定
@@ -14,9 +13,12 @@ jest.mock("next/navigation", () => ({
   redirect: jest.fn(),
 }));
 
-jest.mock("@/lib/infrastructure/auth/session", () => ({
-  getSession: jest.fn(),
-}));
+const mockSessionService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  clear: jest.fn(),
+  refresh: jest.fn(),
+};
 
 const mockPaymentService = {
   processCheckout: jest.fn(),
@@ -30,6 +32,7 @@ jest.mock("@/lib/di/container", () => ({
   getContainer: jest.fn(() => ({
     resolve: jest.fn(() => mockPaymentService),
   })),
+  getSessionService: jest.fn(() => mockSessionService),
 }));
 
 const createMockStripeSession = (
@@ -54,10 +57,7 @@ describe("Payment Actions", () => {
 
   describe("checkoutAction", () => {
     it("should process checkout for authenticated user", async () => {
-      const mockSession = {
-        user: { id: 1 },
-      };
-      (getSession as jest.Mock).mockResolvedValue(mockSession);
+      mockSessionService.get.mockResolvedValue({ userId: 1 });
       const formData = new FormData();
 
       await checkoutAction(formData);
@@ -67,7 +67,7 @@ describe("Payment Actions", () => {
     });
 
     it("should redirect to sign-in if user is not authenticated", async () => {
-      (getSession as jest.Mock).mockResolvedValue(null);
+      mockSessionService.get.mockResolvedValue(null);
       const formData = new FormData();
 
       await expect(checkoutAction(formData)).rejects.toThrow();

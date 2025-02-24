@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { getSessionService } from "@/lib/di/container";
 import { getUserOrders, getOrderItems } from "@/app/actions/order";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/shared/utils";
@@ -12,12 +12,13 @@ import Image from "next/image";
 import { OrderList } from "@/components/orders/order-list";
 
 export default async function OrdersPage() {
-  const session = await getSession();
-  if (!session?.user) {
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
+  if (!session) {
     redirect("/sign-in");
   }
 
-  const orders = await getUserOrders(session.user.id);
+  const orders = await getUserOrders(session.userId);
   const completedOrders = orders.filter((order) => order.status === "paid");
 
   // 各注文のアイテム情報を取得

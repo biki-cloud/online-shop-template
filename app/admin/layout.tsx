@@ -1,14 +1,15 @@
-import { getSession } from "@/lib/infrastructure/auth/session";
 import { redirect } from "next/navigation";
+import { getSessionService } from "@/lib/di/container";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
 
-  if (!session || session.user.role !== "admin") {
+  if (!session || session.role !== "admin") {
     redirect("/sign-in");
   }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { signToken, verifyToken } from "@/lib/infrastructure/auth/session";
+import { getSessionService } from "@/lib/di/container";
 
 // Edge Runtimeでbcryptjsを使用しないように設定
 export const runtime = "nodejs";
@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   // console.log(`[Middleware] Accessing path: ${pathname}`);
 
+  const sessionService = getSessionService();
   const sessionCookie = request.cookies.get("session");
   // console.log(`[Middleware] Session cookie present: ${!!sessionCookie}`);
 
@@ -41,9 +42,9 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      const session = await verifyToken(sessionCookie.value);
-      // console.log(`[Middleware] Admin route - User role: ${session.user.role}`);
-      if (session.user.role !== "admin") {
+      const session = await sessionService.get();
+      // console.log(`[Middleware] Admin route - User role: ${session.role}`);
+      if (!session || session.role !== "admin") {
         // console.log(
         //   "[Middleware] Non-admin user attempting to access admin route"
         // );
@@ -77,20 +78,7 @@ export async function middleware(request: NextRequest) {
   if (sessionCookie && (isProtectedRoute || isAdminRoute)) {
     // console.log("[Middleware] Updating session for protected/admin route");
     try {
-      const parsed = await verifyToken(sessionCookie.value);
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-      res.cookies.set({
-        name: "session",
-        value: await signToken({
-          ...parsed,
-          expires: expiresInOneDay.toISOString(),
-        }),
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        expires: expiresInOneDay,
-      });
+      await sessionService.refresh();
       // console.log("[Middleware] Session successfully updated");
     } catch (error) {
       console.error("[Middleware] Error updating session:", error);

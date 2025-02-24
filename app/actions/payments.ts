@@ -1,23 +1,25 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
-import { getContainer } from "@/lib/di/container";
+import {
+  getSessionService,
+  getPaymentService as getPaymentServiceFromContainer,
+} from "@/lib/di/container";
 import type Stripe from "stripe";
 import { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
 
-function getPaymentService() {
-  const container = getContainer();
-  return container.resolve<IPaymentService>("PaymentService");
+function getPaymentService(): IPaymentService {
+  return getPaymentServiceFromContainer();
 }
 
 export async function checkoutAction(formData: FormData) {
-  const session = await getSession();
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
   if (!session) {
     redirect("/sign-in");
   }
   const paymentService = getPaymentService();
-  await paymentService.processCheckout(session.user.id);
+  await paymentService.processCheckout(session.userId);
 }
 
 export async function handleStripeWebhook(session: Stripe.Checkout.Session) {

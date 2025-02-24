@@ -11,31 +11,45 @@ import {
 } from "../user";
 import { MockUserRepository } from "@/lib/shared/test-utils/mock-repositories";
 import { UserService } from "@/lib/core/services/user.service";
-import { getSession } from "@/lib/infrastructure/auth/session";
-import type { User } from "@/lib/core/domain/user";
+import { getSessionService } from "@/lib/di/container";
+import type { User as DbUser } from "@/lib/infrastructure/db/schema";
 import * as bcryptjs from "bcryptjs";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getContainer } from "@/lib/di/container";
+import { IUserService } from "@/lib/core/services/interfaces/user.service";
+import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
+import { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import type { UserRole } from "@/lib/core/domain/user";
 
-jest.mock("@/lib/infrastructure/auth/session", () => ({
-  getSession: jest.fn(),
+const mockSessionService = {
+  get: jest.fn().mockResolvedValue({ userId: 1 }),
+  set: jest.fn(),
+  clear: jest.fn(),
+  refresh: jest.fn(),
+};
+
+jest.mock("@/lib/di/container", () => ({
+  getSessionService: jest.fn(() => mockSessionService),
 }));
 
 jest.mock("@/lib/infrastructure/payments/stripe");
 
 jest.mock("bcryptjs", () => ({
-  compare: jest.fn().mockResolvedValue(true),
-  hash: jest.fn().mockResolvedValue("hashedPassword"),
+  compare: jest.fn(() => Promise.resolve(true)),
+  hash: jest.fn(() => Promise.resolve("hashedPassword")),
 }));
 
 describe("User Actions", () => {
   let mockUserRepository: MockUserRepository;
-  const mockUser: User = {
+  const mockUser: DbUser = {
     id: 1,
     email: "test@example.com",
     name: "Test User",
-    passwordHash: "hashedPassword",
     role: "user",
-    createdAt: new Date("2025-02-15T21:41:37.040Z"),
-    updatedAt: new Date("2025-02-15T21:41:37.040Z"),
+    passwordHash: "hashedPassword123",
+    createdAt: new Date(),
+    updatedAt: new Date(),
     deletedAt: null,
   };
 
@@ -110,8 +124,8 @@ describe("User Actions", () => {
       const createInput = {
         email: "test@example.com",
         name: "Test User",
-        password: "password123",
-        role: "user",
+        passwordHash: "hashedPassword123",
+        role: "user" as UserRole,
       };
 
       const result = await createUser(createInput);
@@ -126,8 +140,8 @@ describe("User Actions", () => {
       const createInput = {
         email: "test@example.com",
         name: "Test User",
-        password: "password123",
-        role: "user",
+        passwordHash: "hashedPassword123",
+        role: "user" as UserRole,
       };
 
       await expect(createUser(createInput)).rejects.toThrow(
@@ -201,7 +215,9 @@ describe("User Actions", () => {
       };
 
       jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
-      jest.spyOn(bcryptjs, "compare").mockResolvedValue(true);
+      (bcryptjs.compare as jest.Mock).mockImplementation(() =>
+        Promise.resolve(true)
+      );
 
       const result = await validateUserPassword(
         "test@example.com",
@@ -212,8 +228,10 @@ describe("User Actions", () => {
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         "test@example.com"
       );
-      expect(bcryptjs.compare).toHaveBeenCalledWith(
-        "password123",
+      expect((bcryptjs.compare as jest.Mock).mock.calls[0][0]).toBe(
+        "password123"
+      );
+      expect((bcryptjs.compare as jest.Mock).mock.calls[0][1]).toBe(
         "hashedPassword"
       );
     });
@@ -245,7 +263,9 @@ describe("User Actions", () => {
       };
 
       jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
-      jest.spyOn(bcryptjs, "compare").mockResolvedValue(false);
+      (bcryptjs.compare as jest.Mock).mockImplementation(() =>
+        Promise.resolve(false)
+      );
 
       const result = await validateUserPassword(
         "test@example.com",
@@ -256,8 +276,10 @@ describe("User Actions", () => {
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         "test@example.com"
       );
-      expect(bcryptjs.compare).toHaveBeenCalledWith(
-        "wrongpassword",
+      expect((bcryptjs.compare as jest.Mock).mock.calls[0][0]).toBe(
+        "wrongpassword"
+      );
+      expect((bcryptjs.compare as jest.Mock).mock.calls[0][1]).toBe(
         "hashedPassword"
       );
     });
@@ -265,9 +287,7 @@ describe("User Actions", () => {
 
   describe("getCurrentUser", () => {
     it("should return current user when session exists", async () => {
-      (getSession as jest.Mock).mockResolvedValue({
-        user: { id: 1 },
-      });
+      mockSessionService.get.mockResolvedValue({ userId: 1 });
       jest.spyOn(mockUserRepository, "findById").mockResolvedValue(mockUser);
 
       const result = await getCurrentUser();
@@ -277,7 +297,7 @@ describe("User Actions", () => {
     });
 
     it("should return null when no session exists", async () => {
-      (getSession as jest.Mock).mockResolvedValue(null);
+      mockSessionService.get.mockResolvedValue(null);
 
       const result = await getCurrentUser();
 

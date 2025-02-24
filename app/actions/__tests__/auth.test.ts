@@ -4,7 +4,7 @@ import { User } from "@/lib/infrastructure/db/schema";
 import { getContainer } from "@/lib/di/container";
 import { IUserService } from "@/lib/core/services/interfaces/user.service";
 import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
-import { setSession, hashPassword } from "@/lib/infrastructure/auth/session";
+import { ISessionService } from "@/lib/core/services/interfaces/session.service";
 import {
   signIn,
   signUp,
@@ -24,22 +24,22 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("@/lib/di/container", () => ({
   getContainer: jest.fn(),
+  getSessionService: jest.fn().mockReturnValue({
+    set: jest.fn(),
+    get: jest.fn().mockResolvedValue({
+      userId: 1,
+      role: "user",
+    }),
+    clear: jest.fn(),
+    refresh: jest.fn(),
+  }),
 }));
 
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({
   createCheckoutSession: jest.fn(),
 }));
 
-jest.mock("@/lib/infrastructure/auth/session", () => ({
-  setSession: jest.fn(),
-  hashPassword: jest.fn().mockResolvedValue("hashedPassword123"),
-  getSession: jest.fn().mockResolvedValue({
-    user: {
-      id: 1,
-      role: "user",
-    },
-  }),
-}));
+jest.mock("@/lib/infrastructure/auth/session", () => ({}));
 
 jest.mock("@/app/actions/user", () => ({
   getCurrentUser: jest.fn().mockResolvedValue({
@@ -88,6 +88,8 @@ describe("Auth Actions", () => {
 
     it("should sign in user successfully", async () => {
       mockUserService.validatePassword.mockResolvedValue(mockUser);
+      const sessionService =
+        getContainer().resolve<ISessionService>("SessionService");
 
       const result = await signIn({}, validFormData);
 
@@ -95,7 +97,7 @@ describe("Auth Actions", () => {
         "test@example.com",
         "password123"
       );
-      expect(setSession).toHaveBeenCalledWith(mockUser);
+      expect(sessionService.set).toHaveBeenCalledWith(mockUser);
       expect(redirect).toHaveBeenCalledWith("/home");
     });
 
@@ -137,6 +139,8 @@ describe("Auth Actions", () => {
     it("should create new user successfully", async () => {
       mockUserService.findByEmail.mockResolvedValue(null);
       mockUserService.create.mockResolvedValue(mockUser);
+      const sessionService =
+        getContainer().resolve<ISessionService>("SessionService");
 
       await signUp({}, validFormData);
 
@@ -146,7 +150,7 @@ describe("Auth Actions", () => {
         name: "Test User",
         role: "user",
       });
-      expect(setSession).toHaveBeenCalledWith(mockUser);
+      expect(sessionService.set).toHaveBeenCalledWith(mockUser);
       expect(redirect).toHaveBeenCalledWith("/home");
     });
 

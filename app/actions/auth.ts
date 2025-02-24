@@ -2,26 +2,16 @@
 
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
 import {
   validatedAction,
   validatedActionWithUser,
 } from "@/lib/infrastructure/auth/middleware";
-import { getContainer } from "@/lib/di/container";
-import type { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { ISessionService } from "@/lib/core/services/interfaces/session.service";
-import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
-
-function getUserService() {
-  const container = getContainer();
-  return container.resolve<IUserService>("UserService");
-}
-
-function getSessionService() {
-  const container = getContainer();
-  return container.resolve<ISessionService>("SessionService");
-}
+import {
+  getAuthService,
+  getSessionService,
+  getUserService,
+} from "@/lib/di/container";
 
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
@@ -30,32 +20,26 @@ const signInSchema = z.object({
 
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
-  const userService = getUserService();
+  const authService = getAuthService();
 
-  const user = await userService.validatePassword(email, password);
-
-  if (!user) {
+  try {
+    const user = await authService.signIn(email, password);
+    const redirectTo = formData.get("redirect") as string | null;
+    if (redirectTo === "checkout") {
+      return createCheckoutSession({
+        userId: user.id,
+        cart: null,
+        cartItems: [],
+      });
+    }
+    redirect("/home");
+  } catch (error) {
     return {
-      error: "メールアドレスまたはパスワードが正しくありません。",
+      error: error instanceof Error ? error.message : "Invalid credentials",
       email,
       password,
     };
   }
-
-  const sessionService = getSessionService();
-
-  await sessionService.set(user);
-
-  const redirectTo = formData.get("redirect") as string | null;
-  if (redirectTo === "checkout") {
-    return createCheckoutSession({
-      userId: user.id,
-      cart: null,
-      cartItems: [],
-    });
-  }
-
-  redirect("/home");
 });
 
 const signUpSchema = z.object({
@@ -66,54 +50,32 @@ const signUpSchema = z.object({
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const { email, password, name } = data;
-  const userService = getUserService();
-  const authService = getContainer().resolve<IAuthService>("AuthService");
+  const authService = getAuthService();
 
-  const existingUser = await userService.findByEmail(email);
-
-  if (existingUser) {
+  try {
+    const user = await authService.signUp(email, password, name);
+    const redirectTo = formData.get("redirect") as string | null;
+    if (redirectTo === "checkout") {
+      return createCheckoutSession({
+        userId: user.id,
+        cart: null,
+        cartItems: [],
+      });
+    }
+    redirect("/home");
+  } catch (error) {
     return {
-      error: "このメールアドレスは既に登録されています。",
+      error: error instanceof Error ? error.message : "Failed to create user",
       email,
       password,
       name,
     };
   }
-
-  const passwordHash = await authService.hashPassword(password);
-  const createdUser = await userService.create({
-    email,
-    passwordHash,
-    name,
-    role: "user",
-  });
-
-  if (!createdUser) {
-    return {
-      error: "ユーザーの作成に失敗しました。",
-      email,
-      password,
-      name,
-    };
-  }
-
-  const sessionService = getSessionService();
-  await sessionService.set(createdUser);
-
-  const redirectTo = formData.get("redirect") as string | null;
-  if (redirectTo === "checkout") {
-    return createCheckoutSession({
-      userId: createdUser.id,
-      cart: null,
-      cartItems: [],
-    });
-  }
-
-  redirect("/home");
 });
 
 export async function signOut() {
-  (await cookies()).delete("session");
+  const authService = getAuthService();
+  await authService.signOut();
   redirect("/sign-in");
 }
 
@@ -132,28 +94,17 @@ export const updatePassword = validatedActionWithUser(
   updatePasswordSchema,
   async (data, _, user) => {
     const { currentPassword, newPassword } = data;
-    const userService = getUserService();
-    const authService = getContainer().resolve<IAuthService>("AuthService");
+    const authService = getAuthService();
 
-    const isValid = await userService.validatePassword(
-      user.email,
-      currentPassword
-    );
-
-    if (!isValid) {
-      return { error: "現在のパスワードが正しくありません。" };
-    }
-
-    if (currentPassword === newPassword) {
+    try {
+      await authService.updatePassword(user.id, currentPassword, newPassword);
+      return { success: "パスワードを更新しました。" };
+    } catch (error) {
       return {
-        error: "新しいパスワードは現在のパスワードと異なる必要があります。",
+        error:
+          error instanceof Error ? error.message : "Failed to update password",
       };
     }
-
-    const passwordHash = await authService.hashPassword(newPassword);
-    await userService.update(user.id, { passwordHash });
-
-    return { success: "パスワードを更新しました。" };
   }
 );
 
@@ -165,17 +116,27 @@ export const deleteAccount = validatedActionWithUser(
   deleteAccountSchema,
   async (data, _, user) => {
     const { password } = data;
+    const authService = getAuthService();
     const userService = getUserService();
 
-    const isValid = await userService.validatePassword(user.email, password);
-    if (!isValid) {
-      return { error: "パスワードが正しくありません。" };
+    try {
+      const isValid = await authService.comparePasswords(
+        password,
+        user.passwordHash
+      );
+      if (!isValid) {
+        return { error: "パスワードが正しくありません。" };
+      }
+
+      await userService.delete(user.id);
+      await authService.signOut();
+      redirect("/sign-in");
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error ? error.message : "Failed to delete account",
+      };
     }
-
-    await userService.delete(user.id);
-
-    (await cookies()).delete("session");
-    redirect("/sign-in");
   }
 );
 
@@ -190,8 +151,14 @@ export const updateAccount = validatedActionWithUser(
     const { name, email } = data;
     const userService = getUserService();
 
-    await userService.update(user.id, { name, email });
-
-    return { success: "アカウント情報を更新しました。" };
+    try {
+      await userService.update(user.id, { name, email });
+      return { success: "アカウント情報を更新しました。" };
+    } catch (error) {
+      return {
+        error:
+          error instanceof Error ? error.message : "Failed to update account",
+      };
+    }
   }
 );
