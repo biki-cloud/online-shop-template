@@ -8,10 +8,15 @@ import {
 import { revalidatePath } from "next/cache";
 import { getContainer } from "@/lib/di/container";
 import type { Product } from "@/lib/core/domain/product";
+import { getCurrentUser } from "../user";
 
 // モックの設定
 jest.mock("next/cache", () => ({
   revalidatePath: jest.fn(),
+}));
+
+jest.mock("../user", () => ({
+  getCurrentUser: jest.fn(),
 }));
 
 const mockProduct: Product = {
@@ -44,6 +49,17 @@ jest.mock("@/lib/di/container", () => ({
 describe("Product Actions", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // 管理者権限を持つユーザーをモック
+    (getCurrentUser as jest.Mock).mockResolvedValue({
+      id: 1,
+      email: "admin@example.com",
+      name: "Admin User",
+      role: "admin",
+      passwordHash: "hashedPassword",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
+    });
   });
 
   describe("getProducts", () => {
@@ -96,6 +112,30 @@ describe("Product Actions", () => {
       expect(revalidatePath).toHaveBeenCalledWith("/admin/products");
       expect(result).toEqual({ ...mockProduct, ...input });
     });
+
+    it("should throw error if user is not admin", async () => {
+      (getCurrentUser as jest.Mock).mockResolvedValue({
+        id: 2,
+        email: "user@example.com",
+        name: "Regular User",
+        role: "user",
+        passwordHash: "hashedPassword",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
+
+      const input = {
+        name: "New Product",
+        description: "New Description",
+        price: "2000",
+        stock: 5,
+        currency: "JPY",
+        imageUrl: "new.jpg",
+      };
+
+      await expect(createProduct(input)).rejects.toThrow("権限がありません");
+    });
   });
 
   describe("updateProduct", () => {
@@ -124,6 +164,26 @@ describe("Product Actions", () => {
       });
       expect(result).toBeNull();
     });
+
+    it("should throw error if user is not admin", async () => {
+      (getCurrentUser as jest.Mock).mockResolvedValue({
+        id: 2,
+        email: "user@example.com",
+        name: "Regular User",
+        role: "user",
+        passwordHash: "hashedPassword",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
+
+      const input = {
+        name: "Updated Product",
+        price: "3000",
+      };
+
+      await expect(updateProduct(1, input)).rejects.toThrow("権限がありません");
+    });
   });
 
   describe("deleteProduct", () => {
@@ -144,6 +204,21 @@ describe("Product Actions", () => {
 
       expect(mockProductService.delete).toHaveBeenCalledWith(999);
       expect(result).toBe(false);
+    });
+
+    it("should throw error if user is not admin", async () => {
+      (getCurrentUser as jest.Mock).mockResolvedValue({
+        id: 2,
+        email: "user@example.com",
+        name: "Regular User",
+        role: "user",
+        passwordHash: "hashedPassword",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
+      });
+
+      await expect(deleteProduct(1)).rejects.toThrow("権限がありません");
     });
   });
 });
