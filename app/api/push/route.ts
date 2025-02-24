@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import webPush from "web-push";
-import { env } from "@/env";
+import { env } from "@/lib/config/env";
 
 webPush.setVapidDetails(
   `mailto:${env.VAPID_EMAIL}`,
