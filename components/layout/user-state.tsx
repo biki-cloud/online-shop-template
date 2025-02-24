@@ -1,56 +1,66 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { User } from "lucide-react";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SignOutButton } from "./sign-out-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SignOutButton } from "./sign-out-button";
-import { User as UserType } from "@/lib/infrastructure/db/schema";
+import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
-interface UserStateProps {
-  user: UserType | null;
-}
+export function UserState() {
+  const { user, loading } = useAuth();
 
-export function UserState({ user }: UserStateProps) {
-  console.log("[UserState] Current user state:", user);
-
-  if (!user) {
-    console.log("[UserState] No user found, showing sign-in/sign-up buttons");
+  if (loading) {
     return (
-      <Link href="/auth/signin">
-        <Button variant="ghost" size="icon" className="relative group">
-          <User className="h-5 w-5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
-          <span className="sr-only">Sign in</span>
-        </Button>
-      </Link>
+      <div className="flex items-center space-x-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm text-gray-500">読み込み中...</span>
+      </div>
     );
   }
 
-  console.log("[UserState] User is logged in:", user.email);
+  if (!user) {
+    return (
+      <div className="flex items-center space-x-4">
+        <Link
+          href="/sign-in"
+          className="text-sm font-medium text-gray-700 hover:text-gray-800"
+        >
+          サインイン
+        </Link>
+        <Link
+          href="/sign-up"
+          className="text-sm font-medium text-gray-700 hover:text-gray-800"
+        >
+          アカウント作成
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative group">
-          <User className="h-5 w-5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
-          <span className="sr-only">User menu</span>
-        </Button>
+      <DropdownMenuTrigger className="flex items-center space-x-2">
+        <Avatar className="h-8 w-8">
+          <AvatarFallback>
+            {user.user_metadata?.name?.[0]?.toUpperCase() ??
+              user.email?.[0]?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-sm font-medium text-gray-700">
+          {user.user_metadata?.name ?? user.email}
+        </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem className="flex-col items-start gap-1 p-4">
-          <p className="text-sm font-medium leading-none">{user.name}</p>
-          <p className="text-xs text-muted-foreground">{user.email}</p>
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end">
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="w-full">
-            設定
-          </Link>
+          <Link href="/settings">設定</Link>
         </DropdownMenuItem>
-        <SignOutButton className="w-full" />
+        <SignOutButton />
       </DropdownMenuContent>
     </DropdownMenu>
   );

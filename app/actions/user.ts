@@ -8,7 +8,9 @@ import type {
 } from "@/lib/core/domain/user";
 import { getContainer } from "@/lib/di/container";
 import type { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { createServerSupabaseClient } from "@/lib/supabase/client";
 
 function getUserService() {
   const container = getContainer();
@@ -52,9 +54,87 @@ export async function validateUserPassword(
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const session = await getSession();
-  if (!session) return null;
+  const supabase = createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   const userService = getUserService();
-  return await userService.findById(session.user.id);
+  return await userService.findById(parseInt(user.id));
+}
+
+const updateProfileSchema = z.object({
+  name: z.string().min(1, "名前は必須です").max(100),
+  email: z.string().email("メールアドレスの形式が正しくありません"),
+});
+
+export async function updateProfile(formData: FormData) {
+  const validatedFields = updateProfileSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      error: "入力内容を確認してください",
+    };
+  }
+
+  try {
+    const supabase = createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        error: "認証が必要です",
+      };
+    }
+
+    const userService = getUserService();
+    await userService.update(parseInt(user.id), validatedFields.data);
+
+    // ユーザーメタデータも更新
+    await supabase.auth.updateUser({
+      data: {
+        name: validatedFields.data.name,
+      },
+    });
+
+    revalidatePath("/settings");
+    return { success: "プロフィールを更新しました" };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "エラーが発生しました",
+    };
+  }
+}
+
+export async function deleteAccount(formData: FormData) {
+  try {
+    const supabase = createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return {
+        error: "認証が必要です",
+      };
+    }
+
+    const userService = getUserService();
+    await userService.delete(parseInt(user.id));
+
+    // Supabaseのユーザーも削除
+    await supabase.auth.admin.deleteUser(user.id);
+
+    return { success: "アカウントを削除しました" };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "エラーが発生しました",
+    };
+  }
 }

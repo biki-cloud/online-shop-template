@@ -1,21 +1,14 @@
 import "./globals.css";
 import "reflect-metadata";
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
-import { UserProvider } from "@/lib/infrastructure/auth";
-import { getCurrentUser } from "@/app/actions/user";
+import { Inter } from "next/font/google";
 import { Nav } from "@/components/layout/nav";
-import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Next.js SaaS Starter",
-  description: "Get started quickly with Next.js, Postgres, and Stripe.",
-  manifest: "/manifest.json",
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/icon512_rounded.png",
-  },
+  title: "Online Shop",
+  description: "Online Shop Template",
 };
 
 export const viewport: Viewport = {
@@ -23,27 +16,19 @@ export const viewport: Viewport = {
   themeColor: "#4F46E5",
 };
 
-const manrope = Manrope({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let userPromise = getCurrentUser();
-
   return (
-    <html
-      lang="en"
-      className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
-    >
-      <body className="min-h-[100dvh] bg-gray-50">
-        <UserProvider userPromise={userPromise}>
-          <ServiceWorkerRegistration />
-          <Nav />
-          {children}
-          <Toaster />
-        </UserProvider>
+    <html lang="ja">
+      <body className={cn(inter.className, "min-h-screen bg-gray-50")}>
+        <Nav />
+        <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        <Toaster />
       </body>
     </html>
   );

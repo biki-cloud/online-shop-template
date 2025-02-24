@@ -1,6 +1,6 @@
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { signToken, verifyToken } from "@/lib/infrastructure/auth/session";
 
 // Edge Runtimeでbcryptjsを使用しないように設定
 export const runtime = "nodejs";
@@ -10,96 +10,61 @@ const adminRoutes = ["/admin"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  // console.log(`[Middleware] Accessing path: ${pathname}`);
+  const res = NextResponse.next();
 
-  const sessionCookie = request.cookies.get("session");
-  // console.log(`[Middleware] Session cookie present: ${!!sessionCookie}`);
+  // Supabaseクライアントを作成
+  const supabase = createMiddlewareClient({ req: request, res });
 
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
-
-  // console.log(
-  //   `[Middleware] Route type - Protected: ${isProtectedRoute}, Admin: ${isAdminRoute}`
-  // );
+  // セッションを取得
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   // ルートパスへのアクセスを/homeにリダイレクト
   if (pathname === "/") {
-    // console.log("[Middleware] Redirecting root path to /home");
     return NextResponse.redirect(new URL("/home", request.url));
   }
 
   // 管理者ルートのチェック
-  if (isAdminRoute) {
-    // console.log("[Middleware] Checking admin route access");
-    if (!sessionCookie) {
-      // console.log(
-      //   "[Middleware] No session found for admin route, redirecting to sign-in"
-      // );
+  if (isAdminRoute(pathname)) {
+    if (!session) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    try {
-      const session = await verifyToken(sessionCookie.value);
-      // console.log(`[Middleware] Admin route - User role: ${session.user.role}`);
-      if (session.user.role !== "admin") {
-        // console.log(
-        //   "[Middleware] Non-admin user attempting to access admin route"
-        // );
-        return NextResponse.redirect(new URL("/home", request.url));
-      }
-    } catch (error) {
-      // console.error("[Middleware] Error verifying admin session:", error);
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.user_metadata?.role || user.user_metadata.role !== "admin") {
+      return NextResponse.redirect(new URL("/home", request.url));
     }
   }
 
   // 保護されたルートでセッションがない場合
-  if (isProtectedRoute && !sessionCookie) {
-    // console.log(
-    //   "[Middleware] Protected route access without session, redirecting to sign-in"
-    // );
+  if (isProtectedRoute(pathname) && !session) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
 
   // 認証ルートにセッションがある場合はリダイレクト
-  if ((pathname === "/sign-in" || pathname === "/sign-up") && sessionCookie) {
-    // console.log(
-    //   "[Middleware] Authenticated user attempting to access auth routes"
-    // );
+  if (isAuthRoute(pathname) && session) {
     return NextResponse.redirect(new URL("/home", request.url));
   }
 
-  let res = NextResponse.next();
-
-  // セッションの更新処理（保護されたルートの場合のみ）
-  if (sessionCookie && (isProtectedRoute || isAdminRoute)) {
-    // console.log("[Middleware] Updating session for protected/admin route");
-    try {
-      const parsed = await verifyToken(sessionCookie.value);
-      const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-      res.cookies.set({
-        name: "session",
-        value: await signToken({
-          ...parsed,
-          expires: expiresInOneDay.toISOString(),
-        }),
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        expires: expiresInOneDay,
-      });
-      // console.log("[Middleware] Session successfully updated");
-    } catch (error) {
-      console.error("[Middleware] Error updating session:", error);
-      res.cookies.delete("session");
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-  }
-
   return res;
+}
+
+// 保護されたルートかどうかをチェック
+function isProtectedRoute(pathname: string): boolean {
+  return protectedRoutes.some((route) => pathname.startsWith(route));
+}
+
+// 管理者ルートかどうかをチェック
+function isAdminRoute(pathname: string): boolean {
+  return adminRoutes.some((route) => pathname.startsWith(route));
+}
+
+// 認証ルートかどうかをチェック
+function isAuthRoute(pathname: string): boolean {
+  return pathname === "/sign-in" || pathname === "/sign-up";
 }
 
 export const config = {

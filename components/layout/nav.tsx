@@ -15,10 +15,23 @@ import {
 } from "lucide-react";
 import { Suspense } from "react";
 import { UserState } from "./user-state";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { cn } from "@/lib/utils";
+
+const navigation = [
+  { name: "ホーム", href: "/home" },
+  { name: "商品一覧", href: "/products" },
+  { name: "注文履歴", href: "/orders" },
+  { name: "カート", href: "/cart" },
+];
+
+const adminNavigation = [{ name: "商品管理", href: "/admin/products" }];
 
 export function Nav() {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user } = useAuth();
+
+  const isAdmin = user?.user_metadata?.role === "admin";
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/60 dark:bg-gray-950/60 border-b border-gray-200/50 dark:border-gray-800/50 supports-[backdrop-filter]:bg-white/60">
@@ -45,7 +58,7 @@ export function Nav() {
               <span className="sr-only">Products</span>
             </Button>
           </Link>
-          {user?.role === "admin" && (
+          {isAdmin && (
             <Link href="/admin/products">
               <Button variant="ghost" size="icon" className="relative group">
                 <Package className="h-5 w-5 transition-transform group-hover:scale-110 group-hover:text-orange-500" />
@@ -68,24 +81,7 @@ export function Nav() {
             </Button>
           </Link>
           <Suspense fallback={<UserLoadingState />}>
-            {user ? (
-              <UserState user={user} />
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <Link href="/sign-in">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <LogIn className="h-4 w-4" />
-                    <span className="hidden sm:inline-block">サインイン</span>
-                  </Button>
-                </Link>
-                <Link href="/sign-up">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    <span className="hidden sm:inline-block">新規登録</span>
-                  </Button>
-                </Link>
-              </div>
-            )}
+            <UserState />
           </Suspense>
         </nav>
       </div>

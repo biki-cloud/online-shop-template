@@ -1,21 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import { signIn, signUp } from "@/app/actions/auth";
-import { ActionState } from "@/lib/infrastructure/auth/middleware";
-import Link from "next/link";
 import {
   Card,
   CardContent,
-  CardFooter,
+  CardDescription,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { Loader2 } from "lucide-react";
+import Link from "next/link";
 
 interface AuthFormProps {
   mode: "signin" | "signup";
@@ -23,156 +22,152 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect");
-  const priceId = searchParams.get("priceId");
-  const [state, formAction, pending] = useActionState<ActionState, FormData>(
-    mode === "signin" ? signIn : signUp,
-    { error: "" }
-  );
+  const { signIn, signUp } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      if (mode === "signin") {
+        await signIn(formData.email, formData.password);
+      } else {
+        await signUp(formData.email, formData.password, formData.name);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "エラーが発生しました");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   return (
-    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-      <Card className="bg-white/50 backdrop-blur-sm border-none shadow-xl">
-        <CardHeader>
-          <div className="relative h-24">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 opacity-20 rounded-t-lg" />
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>
+          {mode === "signin" ? "サインイン" : "アカウント作成"}
+        </CardTitle>
+        <CardDescription>
+          {mode === "signin"
+            ? "アカウントにサインインしてください。"
+            : "新しいアカウントを作成してください。"}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div className="space-y-2">
+              <Label htmlFor="name">名前</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="名前を入力してください"
+                className="w-full"
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">メールアドレス</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="メールアドレスを入力してください"
+              className="w-full"
+            />
           </div>
-        </CardHeader>
-        <CardContent className="px-8 pb-8">
-          <form className="space-y-6" action={formAction}>
-            <input type="hidden" name="redirect" value={redirect || ""} />
-            <input type="hidden" name="priceId" value={priceId || ""} />
 
-            {mode === "signup" && (
-              <div className="space-y-2">
-                <Label
-                  htmlFor="name"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  お名前
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  defaultValue={state.name}
-                  required
-                  maxLength={100}
-                  className="rounded-lg transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  placeholder="お名前を入力してください"
-                />
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">パスワード</Label>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={8}
+              placeholder="パスワードを入力してください"
+              className="w-full"
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-700">{error}</div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {mode === "signin" ? "サインイン中..." : "アカウント作成中..."}
+              </>
+            ) : mode === "signin" ? (
+              "サインイン"
+            ) : (
+              "アカウント作成"
             )}
+          </Button>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
-                メールアドレス
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                defaultValue={state.email}
-                required
-                maxLength={50}
-                className="rounded-lg transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder="メールアドレスを入力してください"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700"
-              >
-                パスワード
-              </Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete={
-                  mode === "signin" ? "current-password" : "new-password"
-                }
-                defaultValue={state.password}
-                required
-                minLength={8}
-                maxLength={100}
-                className="rounded-lg transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder="パスワードを入力してください"
-              />
-            </div>
-
-            {state?.error && (
-              <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
-                {state.error}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              className={cn(
-                "w-full py-2 px-4 rounded-lg shadow-sm text-sm font-medium text-white",
-                "bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600",
-                "hover:from-orange-500 hover:via-orange-600 hover:to-orange-700",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500",
-                "transition-all duration-200 transform hover:scale-[1.02]"
-              )}
-              disabled={pending}
-            >
-              {pending ? (
-                <>
-                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                  読み込み中...
-                </>
-              ) : mode === "signin" ? (
-                "サインイン"
-              ) : (
-                "アカウント作成"
-              )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="px-8 pb-8">
-          <div className="w-full">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
-                  {mode === "signin"
-                    ? "アカウントをお持ちでない方"
-                    : "アカウントをお持ちの方"}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
+          {mode === "signin" && (
+            <div className="text-center mt-4">
               <Link
-                href={`${mode === "signin" ? "/sign-up" : "/sign-in"}${
-                  redirect ? `?redirect=${redirect}` : ""
-                }${priceId ? `&priceId=${priceId}` : ""}`}
-                className={cn(
-                  "w-full flex justify-center py-2 px-4 rounded-lg shadow-sm text-sm font-medium",
-                  "border border-orange-200 bg-white text-orange-600",
-                  "hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500",
-                  "transition-all duration-200"
-                )}
+                href="/auth/reset-password"
+                className="text-sm text-blue-600 hover:text-blue-800"
               >
-                {mode === "signin"
-                  ? "新規アカウントを作成"
-                  : "既存のアカウントでサインイン"}
+                パスワードをお忘れですか？
               </Link>
             </div>
+          )}
+
+          <div className="text-center mt-4">
+            {mode === "signin" ? (
+              <p className="text-sm text-gray-600">
+                アカウントをお持ちでない方は{" "}
+                <Link
+                  href="/sign-up"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  こちら
+                </Link>
+              </p>
+            ) : (
+              <p className="text-sm text-gray-600">
+                すでにアカウントをお持ちの方は{" "}
+                <Link
+                  href="/sign-in"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  こちら
+                </Link>
+              </p>
+            )}
           </div>
-        </CardFooter>
-      </Card>
-    </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
