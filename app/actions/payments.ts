@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { createServerSupabaseClient } from "@/lib/supabase/client";
 import { getContainer } from "@/lib/di/container";
 import type Stripe from "stripe";
 import { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
@@ -12,12 +12,15 @@ function getPaymentService() {
 }
 
 export async function checkoutAction(formData: FormData) {
-  const session = await getSession();
-  if (!session) {
+  const supabase = createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     redirect("/sign-in");
   }
   const paymentService = getPaymentService();
-  await paymentService.processCheckout(session.user.id);
+  await paymentService.processCheckout(parseInt(user.id));
 }
 
 export async function handleStripeWebhook(session: Stripe.Checkout.Session) {

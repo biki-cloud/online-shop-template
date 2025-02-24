@@ -1,13 +1,16 @@
 "use server";
 
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { createServerSupabaseClient } from "@/lib/supabase/client";
 import { container } from "@/lib/di/container";
 import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
 
 export async function handleCheckout() {
-  const session = await getSession();
-  if (!session?.user) return;
+  const supabase = createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
 
   const paymentService = container.resolve<IPaymentService>("PaymentService");
-  await paymentService.processCheckout(session.user.id);
+  await paymentService.processCheckout(parseInt(user.id));
 }

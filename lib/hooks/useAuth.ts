@@ -8,14 +8,70 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const syncUserWithDatabase = async (sessionUser: User) => {
+    try {
+      if (!sessionUser.email) {
+        console.error("User email is missing");
+        return;
+      }
+
+      const response = await fetch("/api/users/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: sessionUser.id,
+          email: sessionUser.email,
+          name:
+            sessionUser.user_metadata?.name || sessionUser.email.split("@")[0],
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 400) {
+          // 400エラーの場合は警告として記録
+          console.warn("User sync warning:", data.error);
+          return;
+        }
+        console.error("Failed to sync user with database:", data.error);
+      }
+
+      const data = await response.json();
+      return data.user;
+    } catch (error) {
+      console.error("Error syncing user:", error);
+      // エラーをスローせず、同期の失敗を記録するだけにする
+    }
+  };
+
   useEffect(() => {
+    let mounted = true;
+
     // 現在のセッションを取得
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (mounted) {
+          const sessionUser = session?.user ?? null;
+          if (sessionUser) {
+            await syncUserWithDatabase(sessionUser);
+            setUser(sessionUser);
+          } else {
+            setUser(null);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Session error:", error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
     };
 
     getSession();
@@ -23,12 +79,21 @@ export function useAuth() {
     // 認証状態の変更を監視
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+
+      const sessionUser = session?.user ?? null;
+      if (sessionUser) {
+        await syncUserWithDatabase(sessionUser);
+        setUser(sessionUser);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
@@ -55,6 +120,25 @@ export function useAuth() {
   const signUp = useCallback(
     async (email: string, password: string, name: string) => {
       try {
+        // まず、アプリケーションのデータベースにユーザーを作成
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            name,
+            password,
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "アカウント作成に失敗しました");
+        }
+
+        // Supabaseで認証用のユーザーを作成
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -64,6 +148,7 @@ export function useAuth() {
             },
           },
         });
+
         if (error) throw error;
         router.push("/home");
       } catch (error) {

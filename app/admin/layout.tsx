@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { createServerSupabaseClient } from "@/lib/supabase/client";
 import { redirect } from "next/navigation";
 
 export default async function AdminLayout({
@@ -6,9 +6,12 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const supabase = createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session || session.user.role !== "admin") {
+  if (!user || user.user_metadata.role !== "admin") {
     redirect("/sign-in");
   }
 

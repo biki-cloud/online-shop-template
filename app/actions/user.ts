@@ -54,14 +54,32 @@ export async function validateUserPassword(
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const supabase = createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  try {
+    const supabase = createServerSupabaseClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  const userService = getUserService();
-  return await userService.findById(parseInt(user.id));
+    if (!user) return null;
+
+    const userService = getUserService();
+
+    // まずメールアドレスで検索
+    if (user.email) {
+      const dbUser = await userService.findByEmail(user.email);
+      if (dbUser) return dbUser;
+    }
+
+    // メールアドレスで見つからない場合はIDで検索
+    const userId =
+      typeof user.id === "string" ? parseInt(user.id.split(".")[0]) : null;
+    if (!userId || isNaN(userId)) return null;
+
+    return await userService.findById(userId);
+  } catch (error) {
+    console.error("Error in getCurrentUser:", error);
+    return null;
+  }
 }
 
 const updateProfileSchema = z.object({

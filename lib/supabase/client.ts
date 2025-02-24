@@ -17,6 +17,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    storage: typeof window !== "undefined" ? window.localStorage : undefined,
+    storageKey: "supabase.auth.token",
   },
 });
 
@@ -28,7 +30,7 @@ export const createServerSupabaseClient = () => {
 
   return createClient(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
-      autoRefreshToken: false,
+      autoRefreshToken: true,
       persistSession: false,
     },
   });
