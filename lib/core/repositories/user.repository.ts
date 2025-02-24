@@ -7,7 +7,7 @@ import type { User } from "@/lib/infrastructure/db/schema";
 import type { IUserRepository } from "./interfaces/user.repository";
 import { BaseRepository } from "./base.repository";
 import { PgColumn } from "drizzle-orm/pg-core";
-import { comparePasswords } from "@/lib/infrastructure/auth/session";
+import { compare } from "bcryptjs";
 
 @injectable()
 export class UserRepository
@@ -38,7 +38,9 @@ export class UserRepository
     const user = await this.findByEmail(email);
     if (!user) return null;
 
-    const isValid = await comparePasswords(password, user.passwordHash);
-    return isValid ? user : null;
+    const isValid = await compare(password, user.passwordHash);
+    if (!isValid) return null;
+
+    return user;
   }
 }
