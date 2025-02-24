@@ -11,14 +11,29 @@ function getCartService() {
 }
 
 export async function addToCart(productId: number, quantity: number = 1) {
+  console.log("[addToCart] Starting to add item to cart");
+  console.log("[addToCart] Product ID:", productId, "Quantity:", quantity);
+
   const user = await getCurrentUser();
+  console.log("[addToCart] Current user:", user);
+
   if (!user) {
+    console.log("[addToCart] No user found, throwing error");
     throw new Error("ログインが必要です");
   }
 
   const cartService = getCartService();
-  await cartService.addToCart(user.id, productId, quantity);
-  revalidatePath("/cart");
+  console.log("[addToCart] Adding item to cart for user:", user.id);
+
+  try {
+    const cartItem = await cartService.addToCart(user.id, productId, quantity);
+    console.log("[addToCart] Successfully added item to cart:", cartItem);
+    revalidatePath("/cart");
+    return cartItem;
+  } catch (error) {
+    console.error("[addToCart] Error adding item to cart:", error);
+    throw error;
+  }
 }
 
 export async function updateCartItemQuantity(

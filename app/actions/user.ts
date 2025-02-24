@@ -55,29 +55,55 @@ export async function validateUserPassword(
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
+    console.log("[getCurrentUser] Starting to get current user");
     const supabase = createServerSupabaseClient();
+
+    // セッション情報のログ追加
+    const { data: sessionData } = await supabase.auth.getSession();
+    console.log("[getCurrentUser] Session data:", sessionData);
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return null;
+    console.log("[getCurrentUser] Supabase user:", user);
+    if (!user) {
+      console.log("[getCurrentUser] No Supabase user found");
+      return null;
+    }
 
     const userService = getUserService();
 
     // まずメールアドレスで検索
     if (user.email) {
+      console.log("[getCurrentUser] Searching by email:", user.email);
       const dbUser = await userService.findByEmail(user.email);
-      if (dbUser) return dbUser;
+      if (dbUser) {
+        console.log("[getCurrentUser] Found user by email:", dbUser);
+        return dbUser;
+      }
+      console.log("[getCurrentUser] User not found by email");
     }
 
     // メールアドレスで見つからない場合はIDで検索
     const userId =
       typeof user.id === "string" ? parseInt(user.id.split(".")[0]) : null;
-    if (!userId || isNaN(userId)) return null;
+    console.log("[getCurrentUser] Trying to find by ID:", userId);
 
-    return await userService.findById(userId);
+    if (!userId || isNaN(userId)) {
+      console.log("[getCurrentUser] Invalid user ID");
+      return null;
+    }
+
+    const idUser = await userService.findById(userId);
+    console.log("[getCurrentUser] User found by ID:", idUser);
+    return idUser;
   } catch (error) {
-    console.error("Error in getCurrentUser:", error);
+    console.error("[getCurrentUser] Error:", error);
+    console.error(
+      "[getCurrentUser] Error stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
     return null;
   }
 }
