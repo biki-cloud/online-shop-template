@@ -48,7 +48,10 @@ export class EmailServiceImpl implements IEmailService {
   ): Promise<string> {
     const templatePath = path.join(
       process.cwd(),
-      "emails",
+      "lib",
+      "infrastructure",
+      "email",
+      "templates",
       templateName,
       `${type}.ejs`
     );

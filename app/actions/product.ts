@@ -78,6 +78,11 @@ export async function updateProduct(
   id: number,
   data: UpdateProductInput
 ): Promise<Product | null> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") {
+    throw new Error("権限がありません");
+  }
+
   const productService = getProductService();
   const product = await productService.update(id, data);
   revalidatePath("/admin/products");
@@ -86,6 +91,11 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: number): Promise<boolean> {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") {
+    throw new Error("権限がありません");
+  }
+
   const productService = getProductService();
   const result = await productService.delete(id);
   revalidatePath("/admin/products");

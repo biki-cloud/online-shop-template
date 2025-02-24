@@ -41,3 +41,10 @@ supabase ディレクトリはローカルの supabase ディレクトリなの�
 管理者登録時に自動メール通知を運営チームに送信
 承認は既存の管理者が create-admin スクリプトを使用
 将来的に必要になった時点で管理画面を実装
+
+- アーキテクチャの名前
+  - .impl.ts と.interface.ts の名前変更
+  - server か client かまたは両方で動作するのかを示したい
+- シーケンス図
+- setup.ts のリファクタリング
+- auth を supabase の auth を使用する。
