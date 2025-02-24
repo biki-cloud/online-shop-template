@@ -13,6 +13,7 @@ import { redirect } from "next/navigation";
 import { User } from "@/lib/infrastructure/db/schema";
 import { UserCircle, Bell } from "lucide-react";
 import { NotificationSettingsPanel } from "@/components/settings/NotificationSettingsPanel";
+import { EmailTestForm } from "@/components/settings/email-test-form";
 
 export const metadata: Metadata = {
   title: "設定",
@@ -71,6 +72,19 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent>
               <NotificationSettingsPanel />
+            </CardContent>
+          </Card>
+          <Card className="border-orange-100 dark:border-orange-500/20 shadow-lg shadow-orange-100/50 dark:shadow-none backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+            <CardHeader>
+              <CardTitle className="text-xl text-orange-600 dark:text-orange-400">
+                メールテスト
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                メールの送信テストを行います。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EmailTestForm />
             </CardContent>
           </Card>
         </div>
