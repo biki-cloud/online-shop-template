@@ -12,7 +12,7 @@ module.exports = {
     "^.+\\.(ts|tsx)$": [
       "ts-jest",
       {
-        tsconfig: "tsconfig.test.json",
+        tsconfig: "lib/config/tests/tsconfig.test.json",
         isolatedModules: true,
         useESM: true,
       },
