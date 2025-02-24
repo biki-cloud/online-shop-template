@@ -8,13 +8,19 @@ import {
   validatedAction,
   validatedActionWithUser,
 } from "@/lib/infrastructure/auth/middleware";
-import { hashPassword, setSession } from "@/lib/infrastructure/auth/session";
 import { getContainer } from "@/lib/di/container";
 import type { IUserService } from "@/lib/core/services/interfaces/user.service";
+import { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 
 function getUserService() {
   const container = getContainer();
   return container.resolve<IUserService>("UserService");
+}
+
+function getSessionService() {
+  const container = getContainer();
+  return container.resolve<ISessionService>("SessionService");
 }
 
 const signInSchema = z.object({
@@ -36,7 +42,9 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     };
   }
 
-  await setSession(user);
+  const sessionService = getSessionService();
+
+  await sessionService.set(user);
 
   const redirectTo = formData.get("redirect") as string | null;
   if (redirectTo === "checkout") {
@@ -59,6 +67,7 @@ const signUpSchema = z.object({
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const { email, password, name } = data;
   const userService = getUserService();
+  const authService = getContainer().resolve<IAuthService>("AuthService");
 
   const existingUser = await userService.findByEmail(email);
 
@@ -71,9 +80,10 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     };
   }
 
+  const passwordHash = await authService.hashPassword(password);
   const createdUser = await userService.create({
     email,
-    password,
+    passwordHash,
     name,
     role: "user",
   });
@@ -87,7 +97,8 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     };
   }
 
-  await setSession(createdUser);
+  const sessionService = getSessionService();
+  await sessionService.set(createdUser);
 
   const redirectTo = formData.get("redirect") as string | null;
   if (redirectTo === "checkout") {
@@ -122,6 +133,7 @@ export const updatePassword = validatedActionWithUser(
   async (data, _, user) => {
     const { currentPassword, newPassword } = data;
     const userService = getUserService();
+    const authService = getContainer().resolve<IAuthService>("AuthService");
 
     const isValid = await userService.validatePassword(
       user.email,
@@ -138,9 +150,8 @@ export const updatePassword = validatedActionWithUser(
       };
     }
 
-    const newPasswordHash = await hashPassword(newPassword);
-
-    await userService.update(user.id, { password: newPassword });
+    const passwordHash = await authService.hashPassword(newPassword);
+    await userService.update(user.id, { passwordHash });
 
     return { success: "パスワードを更新しました。" };
   }

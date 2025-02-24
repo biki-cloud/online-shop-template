@@ -1,19 +1,11 @@
 "use server";
 
-import { hash } from "bcryptjs";
 import type {
   User,
   CreateUserInput,
   UpdateUserInput,
 } from "@/lib/core/domain/user";
-import { getContainer } from "@/lib/di/container";
-import type { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { getSession } from "@/lib/infrastructure/auth/session";
-
-function getUserService() {
-  const container = getContainer();
-  return container.resolve<IUserService>("UserService");
-}
+import { getSessionService, getUserService } from "@/lib/di/container";
 
 export async function getUserById(id: number): Promise<User | null> {
   const userService = getUserService();
@@ -52,9 +44,10 @@ export async function validateUserPassword(
 }
 
 export async function getCurrentUser(): Promise<User | null> {
-  const session = await getSession();
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
   if (!session) return null;
 
   const userService = getUserService();
-  return await userService.findById(session.user.id);
+  return await userService.findById(session.userId);
 }

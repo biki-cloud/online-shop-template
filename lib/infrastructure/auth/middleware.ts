@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { User } from "@/lib/infrastructure/db/schema";
+import type { User } from "@/lib/core/domain/user";
 import { getCurrentUser } from "@/app/actions/user";
-import { getSession } from "./session";
+import { getSessionService } from "@/lib/di/container";
 
 export type ActionState = {
   error?: string;
@@ -54,6 +54,7 @@ export function validatedActionWithUser<S extends z.ZodType<any, any>, T>(
 }
 
 export async function checkAdmin(): Promise<boolean> {
-  const session = await getSession();
-  return session?.user.role === "admin";
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
+  return session?.role === "admin";
 }

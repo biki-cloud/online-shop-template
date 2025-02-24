@@ -1,11 +1,14 @@
-import { User, NewUser } from "@/lib/infrastructure/db/schema";
+import type {
+  User,
+  CreateUserInput,
+  UpdateUserInput,
+} from "@/lib/core/domain/user";
 
 export interface IUserRepository {
   findAll(): Promise<User[]>;
   findById(id: number): Promise<User | null>;
   findByEmail(email: string): Promise<User | null>;
-  create(data: NewUser): Promise<User>;
-  update(id: number, data: Partial<User>): Promise<User | null>;
+  create(input: CreateUserInput): Promise<User>;
+  update(id: number, input: UpdateUserInput): Promise<User>;
   delete(id: number): Promise<boolean>;
-  verifyPassword(email: string, password: string): Promise<User | null>;
 }
