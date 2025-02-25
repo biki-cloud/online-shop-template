@@ -32,7 +32,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
         cartItems: [],
       });
     }
-    redirect("/home");
+    return { redirect: "/home" };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Invalid credentials",
@@ -62,7 +62,7 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
         cartItems: [],
       });
     }
-    redirect("/home");
+    return { redirect: "/home" };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Failed to create user",
