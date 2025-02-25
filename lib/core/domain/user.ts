@@ -6,9 +6,9 @@ export interface User {
   name: string | null;
   role: UserRole;
   passwordHash: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  deletedAt?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export interface CreateUserInput {
