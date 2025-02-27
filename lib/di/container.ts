@@ -26,7 +26,7 @@ import { UrlService } from "@/lib/core/services/url.service";
 import { IUrlService } from "../core/services/interfaces/url.service";
 import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
 import { EmailServiceImpl } from "@/lib/core/services/email.service";
-import { AuthService } from "@/lib/core/services/auth.service";
+import { AuthService } from "@/lib/core/services/auth.service.impl";
 import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 import { ISessionService } from "../core/services/interfaces/session.service";
 import { SessionService } from "../core/services/session.service";

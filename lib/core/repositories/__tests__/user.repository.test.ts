@@ -6,13 +6,12 @@ import { users } from "@/lib/infrastructure/db/schema";
 import type { User as DbUser } from "@/lib/infrastructure/db/schema";
 import type { User } from "@/lib/core/domain/user";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
-import { AuthService } from "@/lib/core/services/auth.service";
 
 const mockAuthService = {
   comparePasswords: jest.fn(),
 };
 
-jest.mock("@/lib/core/services/auth.service", () => ({
+jest.mock("@/lib/core/services/auth.service.impl", () => ({
   AuthService: jest.fn().mockImplementation(() => mockAuthService),
 }));
 
