@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { redirect } from "next/navigation";
-import { User, UserRole } from "@/lib/core/domain/user";
+import { User, UserRole } from "@/lib/core/domain/user.domain";
 import { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
 import { IUserService } from "@/lib/core/services/interfaces/user.service.interface";
 import { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";

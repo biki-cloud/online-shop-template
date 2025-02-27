@@ -8,7 +8,7 @@ import type {
   CreateOrderInput,
   UpdateOrderInput,
   CreateOrderItemInput,
-} from "../domain/order";
+} from "../domain/order.domain";
 
 @injectable()
 export class OrderService implements IOrderService {

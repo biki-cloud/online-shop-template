@@ -1,7 +1,7 @@
 import type {
   NotificationPayload,
   NotificationSubscription,
-} from "../../domain/notification";
+} from "../../domain/notification.domain";
 
 export interface INotificationRepository {
   checkSupport(): Promise<boolean>;

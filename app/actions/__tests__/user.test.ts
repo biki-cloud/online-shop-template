@@ -13,9 +13,9 @@ import { MockUserRepository } from "@/lib/shared/test-utils/mock-repositories";
 import { UserService } from "@/lib/core/services/user.service.impl";
 import { IUserService } from "@/lib/core/services/interfaces/user.service.interface";
 import { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
-import { UserRole } from "@/lib/core/domain/user";
+import { UserRole } from "@/lib/core/domain/user.domain";
 import { jest } from "@jest/globals";
-import { User } from "@/lib/core/domain/user";
+import { User } from "@/lib/core/domain/user.domain";
 import type { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
 
 jest.mock("next/navigation", () => ({

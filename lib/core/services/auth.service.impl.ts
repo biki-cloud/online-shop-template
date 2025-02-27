@@ -1,8 +1,8 @@
 import { injectable, inject } from "tsyringe";
 import type { IAuthService } from "./interfaces/auth.service.interface";
 import type { IUserRepository } from "../repositories/interfaces/user.repository.interface";
-import type { User, CreateUserInput } from "@/lib/core/domain/user";
-import { UserValidation } from "@/lib/core/domain/user";
+import type { User, CreateUserInput } from "@/lib/core/domain/user.domain";
+import { UserValidation } from "@/lib/core/domain/user.domain";
 import { hash, compare } from "bcryptjs";
 import type { ISessionService } from "./interfaces/session.service.interface";
 

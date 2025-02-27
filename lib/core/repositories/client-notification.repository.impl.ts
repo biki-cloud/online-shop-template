@@ -4,7 +4,7 @@ import { injectable } from "tsyringe";
 import type {
   NotificationSubscription,
   NotificationPayload,
-} from "../domain/notification";
+} from "../domain/notification.domain";
 import type { INotificationRepository } from "./interfaces/notification.repository.interface";
 
 @injectable()

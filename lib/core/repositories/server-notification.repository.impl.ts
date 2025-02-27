@@ -1,6 +1,6 @@
 import { injectable } from "tsyringe";
 import type { INotificationRepository } from "./interfaces/notification.repository.interface";
-import type { NotificationPayload } from "../domain/notification";
+import type { NotificationPayload } from "../domain/notification.domain";
 
 @injectable()
 export class ServerNotificationRepository implements INotificationRepository {

@@ -1,4 +1,4 @@
-import type { NotificationPayload } from "../../domain/notification";
+import type { NotificationPayload } from "../../domain/notification.domain";
 
 export interface INotificationService {
   checkSupport(): Promise<boolean>;

@@ -4,7 +4,7 @@ import {
   CreateOrderInput,
   UpdateOrderInput,
   CreateOrderItemInput,
-} from "../../domain/order";
+} from "../../domain/order.domain";
 
 export interface IOrderService {
   findAll(): Promise<Order[]>;
