@@ -6,7 +6,7 @@ import type {
   User,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
+} from "@/lib/core/domain/user.domain";
 import { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
 
 jest.mock("bcryptjs", () => ({
