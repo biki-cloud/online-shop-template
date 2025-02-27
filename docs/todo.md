@@ -46,5 +46,6 @@ supabase ディレクトリはローカルの supabase ディレクトリなの�
   - .impl.ts と.interface.ts の名前変更..domain.ts も
   - server か client かまたは両方で動作するのかを示したい
   - domain にバリデーションも集めた方がいいかも
+  - dto クラスも作った方が良い？
 - シーケンス図
 - setup.ts のリファクタリング
