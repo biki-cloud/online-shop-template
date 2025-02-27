@@ -10,7 +10,7 @@ import type {
   CreateUserInput,
   UpdateUserInput,
 } from "@/lib/core/domain/user";
-import type { IUserRepository } from "./interfaces/user.repository";
+import type { IUserRepository } from "./interfaces/user.repository.interface";
 
 @injectable()
 export class UserRepository implements IUserRepository {

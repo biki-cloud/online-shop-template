@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type {
   IPushSubscriptionRepository,
   WebPushSubscription,
-} from "./interfaces/push-subscription.repository";
+} from "./interfaces/push-subscription.repository.interface";
 import type {
   PushSubscription,
   NewPushSubscription,

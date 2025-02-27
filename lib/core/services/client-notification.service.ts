@@ -4,7 +4,7 @@ import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
 import type { NotificationPayload } from "../domain/notification";
 import type { INotificationService } from "./interfaces/notification.service";
-import type { INotificationRepository } from "../repositories/interfaces/notification.repository";
+import type { INotificationRepository } from "../repositories/interfaces/notification.repository.interface";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 @injectable()

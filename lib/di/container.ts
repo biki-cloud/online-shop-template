@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
-import type { ICartRepository } from "@/lib/core/repositories/interfaces/cart.repository";
+import type { ICartRepository } from "@/lib/core/repositories/interfaces/cart.repository.interface";
 import type { IOrderRepository } from "@/lib/core/repositories/interfaces/order.repository";
 import type { IPaymentRepository } from "@/lib/core/repositories/interfaces/payment.repository";
 import type { IUserRepository } from "@/lib/core/repositories/interfaces/user.repository";

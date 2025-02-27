@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
-import type { IOrderRepository } from "../repositories/interfaces/order.repository";
+import type { IOrderRepository } from "../repositories/interfaces/order.repository.interface";
 import type { IOrderService } from "./interfaces/order.service";
 import type {
   Order,

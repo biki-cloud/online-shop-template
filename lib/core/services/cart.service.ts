@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
-import type { ICartRepository } from "../repositories/interfaces/cart.repository";
+import type { ICartRepository } from "../repositories/interfaces/cart.repository.interface";
 import type { ICartService } from "./interfaces/cart.service";
 import type { Cart, CartItem } from "@/lib/core/domain/cart";
 

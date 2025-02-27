@@ -5,7 +5,7 @@ import type {
   NotificationSubscription,
   NotificationPayload,
 } from "../domain/notification";
-import type { INotificationRepository } from "./interfaces/notification.repository";
+import type { INotificationRepository } from "./interfaces/notification.repository.interface";
 
 @injectable()
 export class NotificationRepository implements INotificationRepository {

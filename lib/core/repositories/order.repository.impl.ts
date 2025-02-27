@@ -9,7 +9,7 @@ import {
   orderItems,
   products,
 } from "@/lib/infrastructure/db/schema";
-import type { IOrderRepository } from "./interfaces/order.repository";
+import type { IOrderRepository } from "./interfaces/order.repository.interface";
 import { BaseRepository } from "./base.repository.impl";
 import { PgColumn } from "drizzle-orm/pg-core";
 
