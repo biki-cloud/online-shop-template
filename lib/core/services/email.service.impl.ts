@@ -4,7 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 import ejs from "ejs";
 import type { EmailOptions } from "@/lib/core/domain/email";
-import type { IEmailService } from "./interfaces/email.service";
+import type { IEmailService } from "./interfaces/email.service.interface";
 
 @injectable()
 export class EmailServiceImpl implements IEmailService {

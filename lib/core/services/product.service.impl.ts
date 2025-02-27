@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import type { IProductRepository } from "../repositories/interfaces/product.repository.interface";
-import type { IProductService } from "./interfaces/product.service";
+import type { IProductService } from "./interfaces/product.service.interface";
 import type {
   Product,
   CreateProductInput,

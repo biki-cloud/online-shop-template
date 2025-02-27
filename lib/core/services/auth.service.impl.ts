@@ -1,10 +1,10 @@
 import { injectable, inject } from "tsyringe";
-import type { IAuthService } from "./interfaces/auth.service";
+import type { IAuthService } from "./interfaces/auth.service.interface";
 import type { IUserRepository } from "../repositories/interfaces/user.repository.interface";
 import type { User, CreateUserInput } from "@/lib/core/domain/user";
 import { UserValidation } from "@/lib/core/domain/user";
 import { hash, compare } from "bcryptjs";
-import type { ISessionService } from "./interfaces/session.service";
+import type { ISessionService } from "./interfaces/session.service.interface";
 
 @injectable()
 export class AuthService implements IAuthService {

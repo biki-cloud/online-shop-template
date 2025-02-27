@@ -7,9 +7,9 @@ import type { IPaymentRepository } from "../repositories/interfaces/payment.repo
 import type { ICartRepository } from "../repositories/interfaces/cart.repository.interface";
 import type { IOrderRepository } from "../repositories/interfaces/order.repository.interface";
 import type { Cart, CartItem } from "@/lib/core/domain/cart";
-import type { IPaymentService } from "./interfaces/payment.service";
+import type { IPaymentService } from "./interfaces/payment.service.interface";
 import { UrlService } from "./url.service.impl";
-import type { IUrlService } from "./interfaces/url.service";
+import type { IUrlService } from "./interfaces/url.service.interface";
 
 @injectable()
 export class PaymentService implements IPaymentService {

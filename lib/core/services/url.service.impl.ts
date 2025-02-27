@@ -1,5 +1,5 @@
 import { injectable } from "tsyringe";
-import type { IUrlService } from "./interfaces/url.service";
+import type { IUrlService } from "./interfaces/url.service.interface";
 
 @injectable()
 export class UrlService implements IUrlService {

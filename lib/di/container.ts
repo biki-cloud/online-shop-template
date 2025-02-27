@@ -23,12 +23,12 @@ import { OrderService } from "@/lib/core/services/order.service.impl";
 import { UserService } from "@/lib/core/services/user.service.impl";
 import { db } from "@/lib/infrastructure/db/drizzle";
 import { UrlService } from "@/lib/core/services/url.service.impl";
-import { IUrlService } from "../core/services/interfaces/url.service";
+import { IUrlService } from "../core/services/interfaces/url.service.interface";
 import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
 import { EmailServiceImpl } from "@/lib/core/services/email.service.impl";
 import { AuthService } from "@/lib/core/services/auth.service.impl";
 import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
-import { ISessionService } from "../core/services/interfaces/session.service";
+import { ISessionService } from "../core/services/interfaces/session.service.interface";
 import { SessionService } from "../core/services/session.service.impl";
 
 let isInitialized = false;

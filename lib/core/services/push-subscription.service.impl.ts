@@ -4,7 +4,7 @@ import type {
   WebPushSubscription,
 } from "../repositories/interfaces/push-subscription.repository.interface";
 import type { PushSubscription } from "@/lib/infrastructure/db/schema";
-import type { IPushSubscriptionService } from "./interfaces/push-subscription.service";
+import type { IPushSubscriptionService } from "./interfaces/push-subscription.service.interface";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 @injectable()

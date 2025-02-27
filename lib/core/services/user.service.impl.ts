@@ -5,8 +5,8 @@ import type {
   UpdateUserInput,
 } from "@/lib/core/domain/user";
 import type { IUserRepository } from "../repositories/interfaces/user.repository.interface";
-import type { IUserService } from "./interfaces/user.service";
-import type { IAuthService } from "./interfaces/auth.service";
+import type { IUserService } from "./interfaces/user.service.interface";
+import type { IAuthService } from "./interfaces/auth.service.interface";
 
 @injectable()
 export class UserService implements IUserService {

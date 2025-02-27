@@ -1,12 +1,12 @@
 import "reflect-metadata";
 import { injectable, inject } from "tsyringe";
 import type { NotificationPayload } from "../domain/notification";
-import type { INotificationService } from "./interfaces/notification.service";
+import type { INotificationService } from "./interfaces/notification.service.interface";
 import type { INotificationRepository } from "../repositories/interfaces/notification.repository.interface";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 import webPush from "web-push";
 import type { Product } from "@/lib/infrastructure/db/schema";
-import type { IPushSubscriptionService } from "./interfaces/push-subscription.service";
+import type { IPushSubscriptionService } from "./interfaces/push-subscription.service.interface";
 
 @injectable()
 export class NotificationService implements INotificationService {
