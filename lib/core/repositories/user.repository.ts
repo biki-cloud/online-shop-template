@@ -3,27 +3,18 @@ import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { users } from "@/lib/infrastructure/db/schema";
-import type { User } from "@/lib/infrastructure/db/schema";
+import type { User as DbUser } from "@/lib/infrastructure/db/schema";
+import type {
+  User,
+  UserRole,
+  CreateUserInput,
+  UpdateUserInput,
+} from "@/lib/core/domain/user";
 import type { IUserRepository } from "./interfaces/user.repository";
-import { BaseRepository } from "./base.repository";
-import { PgColumn } from "drizzle-orm/pg-core";
-import { comparePasswords } from "@/lib/infrastructure/auth/session";
 
 @injectable()
-export class UserRepository
-  extends BaseRepository<User>
-  implements IUserRepository
-{
-  constructor(
-    @inject("Database")
-    protected readonly db: Database
-  ) {
-    super(db, users);
-  }
-
-  protected get idColumn(): PgColumn<any> {
-    return users.id;
-  }
+export class UserRepository implements IUserRepository {
+  constructor(@inject("Database") protected readonly db: Database) {}
 
   async findByEmail(email: string): Promise<User | null> {
     const result = await this.db
@@ -31,14 +22,56 @@ export class UserRepository
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
-    return result[0] ?? null;
+    return result[0] ? this.toDomainUser(result[0]) : null;
   }
 
-  async verifyPassword(email: string, password: string): Promise<User | null> {
-    const user = await this.findByEmail(email);
-    if (!user) return null;
+  private toDomainUser(dbUser: DbUser): User {
+    return {
+      id: dbUser.id,
+      email: dbUser.email,
+      name: dbUser.name,
+      role: dbUser.role as UserRole,
+      passwordHash: dbUser.passwordHash,
+      createdAt: dbUser.createdAt,
+      updatedAt: dbUser.updatedAt,
+      deletedAt: dbUser.deletedAt,
+    };
+  }
 
-    const isValid = await comparePasswords(password, user.passwordHash);
-    return isValid ? user : null;
+  async findById(id: number): Promise<User | null> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    return result[0] ? this.toDomainUser(result[0]) : null;
+  }
+
+  async findAll(): Promise<User[]> {
+    const results = await this.db.select().from(users);
+    return results.map(this.toDomainUser);
+  }
+
+  async create(input: CreateUserInput): Promise<User> {
+    const result = await this.db.insert(users).values(input).returning();
+    return this.toDomainUser(result[0]);
+  }
+
+  async update(id: number, input: UpdateUserInput): Promise<User> {
+    const result = await this.db
+      .update(users)
+      .set(input)
+      .where(eq(users.id, id))
+      .returning();
+    if (!result[0]) throw new Error("User not found");
+    return this.toDomainUser(result[0]);
+  }
+
+  async delete(id: number): Promise<boolean> {
+    const result = await this.db
+      .delete(users)
+      .where(eq(users.id, id))
+      .returning();
+    return result.length > 0;
   }
 }

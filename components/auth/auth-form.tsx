@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { signIn, signUp } from "@/app/actions/auth";
 import { ActionState } from "@/lib/infrastructure/auth/middleware";
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -23,12 +24,19 @@ interface AuthFormProps {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const redirect = searchParams.get("redirect");
   const priceId = searchParams.get("priceId");
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === "signin" ? signIn : signUp,
     { error: "" }
   );
+
+  useEffect(() => {
+    if (state?.redirect) {
+      router.push(state.redirect);
+    }
+  }, [state?.redirect, router]);
 
   return (
     <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -106,6 +114,33 @@ export function AuthForm({ mode }: AuthFormProps) {
                 className="rounded-lg transition-all duration-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 placeholder="パスワードを入力してください"
               />
+              {mode === "signup" && (
+                <div className="text-sm text-gray-500 mt-1">
+                  <p>パスワードは以下の要件を満たす必要があります：</p>
+                  <div className="space-y-1 mt-1 ml-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-gray-500" />
+                      <span>8文字以上</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-gray-500" />
+                      <span>少なくとも1つの数字</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-gray-500" />
+                      <span>少なくとも1つの小文字</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-gray-500" />
+                      <span>少なくとも1つの大文字</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-1 h-1 rounded-full bg-gray-500" />
+                      <span>少なくとも1つの特殊文字（!@#$%^&*）</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {state?.error && (

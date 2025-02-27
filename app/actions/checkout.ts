@@ -1,13 +1,12 @@
 "use server";
 
-import { getSession } from "@/lib/infrastructure/auth/session";
-import { container } from "@/lib/di/container";
-import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
+import { getSessionService, getPaymentService } from "@/lib/di/container";
 
 export async function handleCheckout() {
-  const session = await getSession();
-  if (!session?.user) return;
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
+  if (!session) return;
 
-  const paymentService = container.resolve<IPaymentService>("PaymentService");
-  await paymentService.processCheckout(session.user.id);
+  const paymentService = getPaymentService();
+  await paymentService.processCheckout(session.userId);
 }

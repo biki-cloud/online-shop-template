@@ -26,6 +26,10 @@ import { UrlService } from "@/lib/core/services/url.service";
 import { IUrlService } from "../core/services/interfaces/url.service";
 import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
 import { EmailServiceImpl } from "@/lib/core/services/email.service";
+import { AuthService } from "@/lib/core/services/auth.service";
+import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
+import { ISessionService } from "../core/services/interfaces/session.service";
+import { SessionService } from "../core/services/session.service";
 
 let isInitialized = false;
 
@@ -71,6 +75,11 @@ function initializeContainer() {
   container.registerSingleton<IUserService>("UserService", UserService);
   container.registerSingleton<IUrlService>("UrlService", UrlService);
   container.registerSingleton<IEmailService>("EmailService", EmailServiceImpl);
+  container.registerSingleton<IAuthService>("AuthService", AuthService);
+  container.registerSingleton<ISessionService>(
+    "SessionService",
+    SessionService
+  );
 
   isInitialized = true;
 }
@@ -82,4 +91,48 @@ export { container };
 
 export function getContainer() {
   return container;
+}
+
+export function getCartService() {
+  return container.resolve<ICartService>("CartService");
+}
+export function getProductService() {
+  return container.resolve<IProductService>("ProductService");
+}
+export function getPaymentService() {
+  return container.resolve<IPaymentService>("PaymentService");
+}
+export function getOrderService() {
+  return container.resolve<IOrderService>("OrderService");
+}
+export function getUserService() {
+  return container.resolve<IUserService>("UserService");
+}
+export function getUrlService() {
+  return container.resolve<IUrlService>("UrlService");
+}
+export function getEmailService() {
+  return container.resolve<IEmailService>("EmailService");
+}
+export function getAuthService() {
+  return container.resolve<IAuthService>("AuthService");
+}
+export function getSessionService() {
+  return container.resolve<ISessionService>("SessionService");
+}
+
+export function getCartRepository() {
+  return container.resolve<ICartRepository>("CartRepository");
+}
+export function getOrderRepository() {
+  return container.resolve<IOrderRepository>("OrderRepository");
+}
+export function getPaymentRepository() {
+  return container.resolve<IPaymentRepository>("PaymentRepository");
+}
+export function getUserRepository() {
+  return container.resolve<IUserRepository>("UserRepository");
+}
+export function getProductRepository() {
+  return container.resolve<IProductRepository>("ProductRepository");
 }

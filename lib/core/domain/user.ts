@@ -1,24 +1,42 @@
+export type UserRole = "admin" | "user";
+
 export interface User {
   id: number;
-  name: string | null;
   email: string;
+  name: string | null;
+  role: UserRole;
   passwordHash: string;
-  role: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
 }
 
-export type CreateUserInput = {
-  name: string;
+export interface CreateUserInput {
   email: string;
-  password: string;
-  role?: string;
-};
+  name: string;
+  passwordHash: string;
+  role?: UserRole;
+}
 
-export type UpdateUserInput = Partial<{
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}>;
+export interface UpdateUserInput {
+  name?: string;
+  email?: string;
+  passwordHash?: string;
+  role?: UserRole;
+}
+
+export class UserValidation {
+  static validateEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  static validatePassword(password: string): boolean {
+    return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*]).{8,}$/.test(
+      password
+    );
+  }
+
+  static validateName(name: string): boolean {
+    return name.length >= 2 && name.length <= 50;
+  }
+}

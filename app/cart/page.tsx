@@ -1,23 +1,22 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
 import { CartItems } from "@/components/cart/cart-items";
 import { CartSummary } from "@/components/cart/cart-summary";
-import { container } from "@/lib/di/container";
+import { container, getSessionService } from "@/lib/di/container";
 import type { ICartService } from "@/lib/core/services/interfaces/cart.service";
 import type { CartItem } from "@/lib/core/domain/cart";
 import type { Product } from "@/lib/core/domain/product";
 import { ShoppingCart } from "lucide-react";
 
 export default async function CartPage() {
-  const session = await getSession();
-  const user = session?.user;
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
 
-  if (!user) {
+  if (!session) {
     redirect("/sign-in");
   }
 
   const cartService = container.resolve<ICartService>("CartService");
-  const cart = await cartService.findActiveCart(user.id);
+  const cart = await cartService.findActiveCart(session.userId);
 
   if (!cart) {
     return (

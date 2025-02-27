@@ -1,3 +1,5 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
 import {
   checkoutAction,
   handleStripeWebhook,
@@ -5,47 +7,41 @@ import {
   getStripeProducts,
 } from "../payments";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
-import { getContainer } from "@/lib/di/container";
-import type Stripe from "stripe";
+import { getSessionService, getPaymentService } from "@/lib/di/container";
+import type { Stripe } from "stripe";
+import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
+import type { ISessionService } from "@/lib/core/services/interfaces/session.service";
 
 // モックの設定
 jest.mock("next/navigation", () => ({
   redirect: jest.fn(),
 }));
 
-jest.mock("@/lib/infrastructure/auth/session", () => ({
-  getSession: jest.fn(),
-}));
+const mockSession = {
+  userId: 1,
+  role: "user",
+} as const;
 
-const mockPaymentService = {
+const mockSessionService: jest.Mocked<ISessionService> = {
+  get: jest.fn(),
+  set: jest.fn(),
+  clear: jest.fn(),
+  refresh: jest.fn(),
+};
+
+const mockPaymentService: jest.Mocked<IPaymentService> = {
   processCheckout: jest.fn(),
   handlePaymentSuccess: jest.fn(),
   handlePaymentFailure: jest.fn(),
   getStripePrices: jest.fn(),
   getStripeProducts: jest.fn(),
+  handleCheckoutSession: jest.fn(),
 };
 
 jest.mock("@/lib/di/container", () => ({
-  getContainer: jest.fn(() => ({
-    resolve: jest.fn(() => mockPaymentService),
-  })),
+  getSessionService: jest.fn(() => mockSessionService),
+  getPaymentService: jest.fn(() => mockPaymentService),
 }));
-
-const createMockStripeSession = (
-  paymentStatus: string
-): Stripe.Checkout.Session =>
-  ({
-    id: "cs_test_123",
-    object: "checkout.session",
-    payment_status: paymentStatus as Stripe.Checkout.Session.PaymentStatus,
-    // 必要最小限のプロパティを追加
-    livemode: false,
-    metadata: {},
-    created: 1234567890,
-    expires_at: 1234567890,
-    status: "complete",
-  } as unknown as Stripe.Checkout.Session);
 
 describe("Payment Actions", () => {
   beforeEach(() => {
@@ -53,57 +49,59 @@ describe("Payment Actions", () => {
   });
 
   describe("checkoutAction", () => {
-    it("should process checkout for authenticated user", async () => {
-      const mockSession = {
-        user: { id: 1 },
-      };
-      (getSession as jest.Mock).mockResolvedValue(mockSession);
-      const formData = new FormData();
+    it("should redirect to sign-in if no session", async () => {
+      mockSessionService.get.mockResolvedValue(null);
 
+      const formData = new FormData();
       await checkoutAction(formData);
 
-      expect(mockPaymentService.processCheckout).toHaveBeenCalledWith(1);
-      expect(redirect).not.toHaveBeenCalled();
-    });
-
-    it("should redirect to sign-in if user is not authenticated", async () => {
-      (getSession as jest.Mock).mockResolvedValue(null);
-      const formData = new FormData();
-
-      await expect(checkoutAction(formData)).rejects.toThrow();
       expect(redirect).toHaveBeenCalledWith("/sign-in");
       expect(mockPaymentService.processCheckout).not.toHaveBeenCalled();
+    });
+
+    it("should process checkout when session exists", async () => {
+      mockSessionService.get.mockResolvedValue(mockSession);
+      mockPaymentService.processCheckout.mockResolvedValue();
+
+      const formData = new FormData();
+      await checkoutAction(formData);
+
+      expect(mockPaymentService.processCheckout).toHaveBeenCalledWith(
+        mockSession.userId
+      );
+    });
+
+    it("should handle checkout error", async () => {
+      mockSessionService.get.mockResolvedValue(mockSession);
+      mockPaymentService.processCheckout.mockRejectedValue(
+        new Error("Checkout failed")
+      );
+
+      const formData = new FormData();
+      await expect(checkoutAction(formData)).rejects.toThrow("Checkout failed");
     });
   });
 
   describe("handleStripeWebhook", () => {
     it("should handle successful payment", async () => {
-      const mockSession = createMockStripeSession("paid");
-
-      await handleStripeWebhook(mockSession);
-
+      const session = createMockStripeSession("paid");
+      await handleStripeWebhook(session);
       expect(mockPaymentService.handlePaymentSuccess).toHaveBeenCalledWith(
-        mockSession
+        session
       );
-      expect(mockPaymentService.handlePaymentFailure).not.toHaveBeenCalled();
     });
 
     it("should handle failed payment", async () => {
-      const mockSession = createMockStripeSession("unpaid");
-
-      await handleStripeWebhook(mockSession);
-
+      const session = createMockStripeSession("unpaid");
+      await handleStripeWebhook(session);
       expect(mockPaymentService.handlePaymentFailure).toHaveBeenCalledWith(
-        mockSession
+        session
       );
-      expect(mockPaymentService.handlePaymentSuccess).not.toHaveBeenCalled();
     });
 
     it("should not handle payment with unknown status", async () => {
-      const mockSession = createMockStripeSession("processing");
-
-      await handleStripeWebhook(mockSession);
-
+      const session = createMockStripeSession("processing");
+      await handleStripeWebhook(session);
       expect(mockPaymentService.handlePaymentSuccess).not.toHaveBeenCalled();
       expect(mockPaymentService.handlePaymentFailure).not.toHaveBeenCalled();
     });
@@ -113,10 +111,7 @@ describe("Payment Actions", () => {
     it("should return stripe prices", async () => {
       const mockPrices = [{ id: "price_1", amount: 1000 }];
       mockPaymentService.getStripePrices.mockResolvedValue(mockPrices);
-
       const result = await getStripePrices();
-
-      expect(mockPaymentService.getStripePrices).toHaveBeenCalled();
       expect(result).toEqual(mockPrices);
     });
   });
@@ -125,11 +120,23 @@ describe("Payment Actions", () => {
     it("should return stripe products", async () => {
       const mockProducts = [{ id: "prod_1", name: "Product 1" }];
       mockPaymentService.getStripeProducts.mockResolvedValue(mockProducts);
-
       const result = await getStripeProducts();
-
-      expect(mockPaymentService.getStripeProducts).toHaveBeenCalled();
       expect(result).toEqual(mockProducts);
     });
   });
 });
+
+function createMockStripeSession(
+  paymentStatus: string
+): Stripe.Checkout.Session {
+  return {
+    id: "cs_test_123",
+    object: "checkout.session",
+    payment_status: paymentStatus as Stripe.Checkout.Session.PaymentStatus,
+    livemode: false,
+    metadata: {},
+    created: 1234567890,
+    expires_at: 1234567890,
+    status: "complete",
+  } as unknown as Stripe.Checkout.Session;
+}

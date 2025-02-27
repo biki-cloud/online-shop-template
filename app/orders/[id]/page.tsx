@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/infrastructure/auth/session";
+import { getSessionService } from "@/lib/di/container";
 import { getOrderById, getOrderItems } from "@/app/actions/order";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/lib/shared/utils";
@@ -16,8 +16,9 @@ interface OrderDetailPageProps {
 export default async function OrderDetailPage({
   params,
 }: OrderDetailPageProps) {
-  const session = await getSession();
-  if (!session?.user) {
+  const sessionService = getSessionService();
+  const session = await sessionService.get();
+  if (!session) {
     redirect("/sign-in");
   }
 
@@ -30,7 +31,7 @@ export default async function OrderDetailPage({
   }
 
   // 他のユーザーの注文は見れないようにする
-  if (order.userId !== session.user.id) {
+  if (order.userId !== session.userId) {
     redirect("/orders");
   }
 
