@@ -1,15 +1,9 @@
 import { jest } from "@jest/globals";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import {
-  getAuthService,
-  getSessionService,
-  getUserService,
-} from "@/lib/di/container";
 import { User, UserRole } from "@/lib/core/domain/user";
-import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
-import { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
+import { IUserService } from "@/lib/core/services/interfaces/user.service.interface";
+import { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
 import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
 import {
   signIn,

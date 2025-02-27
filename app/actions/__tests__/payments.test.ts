@@ -9,8 +9,8 @@ import {
 import { redirect } from "next/navigation";
 import { getSessionService, getPaymentService } from "@/lib/di/container";
 import type { Stripe } from "stripe";
-import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
-import type { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service.interface";
+import type { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
 
 // モックの設定
 jest.mock("next/navigation", () => ({
