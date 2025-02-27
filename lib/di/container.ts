@@ -16,20 +16,20 @@ import type { IProductService } from "@/lib/core/services/interfaces/product.ser
 import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
 import type { IOrderService } from "@/lib/core/services/interfaces/order.service";
 import type { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { CartService } from "@/lib/core/services/cart.service";
-import { ProductService } from "@/lib/core/services/product.service";
-import { PaymentService } from "@/lib/core/services/payment.service";
-import { OrderService } from "@/lib/core/services/order.service";
-import { UserService } from "@/lib/core/services/user.service";
+import { CartService } from "@/lib/core/services/cart.service.impl";
+import { ProductService } from "@/lib/core/services/product.service.impl";
+import { PaymentService } from "@/lib/core/services/payment.service.impl";
+import { OrderService } from "@/lib/core/services/order.service.impl";
+import { UserService } from "@/lib/core/services/user.service.impl";
 import { db } from "@/lib/infrastructure/db/drizzle";
-import { UrlService } from "@/lib/core/services/url.service";
+import { UrlService } from "@/lib/core/services/url.service.impl";
 import { IUrlService } from "../core/services/interfaces/url.service";
 import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
-import { EmailServiceImpl } from "@/lib/core/services/email.service";
+import { EmailServiceImpl } from "@/lib/core/services/email.service.impl";
 import { AuthService } from "@/lib/core/services/auth.service.impl";
 import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 import { ISessionService } from "../core/services/interfaces/session.service";
-import { SessionService } from "../core/services/session.service";
+import { SessionService } from "../core/services/session.service.impl";
 
 let isInitialized = false;
 

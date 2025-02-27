@@ -17,10 +17,10 @@
 
 import "reflect-metadata";
 import { container } from "tsyringe";
-import type { IPushSubscriptionRepository } from "@/lib/core/repositories/interfaces/push-subscription.repository";
+import type { IPushSubscriptionRepository } from "@/lib/core/repositories/interfaces/push-subscription.repository.interface";
 import { PushSubscriptionRepository } from "@/lib/core/repositories/push-subscription.repository.impl";
-import { PushSubscriptionService } from "@/lib/core/services/push-subscription.service";
-import { NotificationService } from "@/lib/core/services/server-notification.service";
+import { PushSubscriptionService } from "@/lib/core/services/push-subscription.service.impl";
+import { NotificationService } from "@/lib/core/services/server-notification.service.impl";
 import { ServerNotificationRepository } from "@/lib/core/repositories/server-notification.repository.impl";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 import { db } from "@/lib/infrastructure/db/drizzle";

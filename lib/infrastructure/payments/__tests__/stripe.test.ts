@@ -32,7 +32,7 @@ jest.mock("@/lib/shared/utils", () => ({
 }));
 
 // UrlServiceのモック
-jest.mock("@/lib/core/services/url.service", () => ({
+jest.mock("@/lib/core/services/url.service.impl", () => ({
   UrlService: jest.fn().mockImplementation(() => ({
     getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
     getFullUrl: jest

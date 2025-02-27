@@ -9,7 +9,7 @@ import { BaseRepository } from "./base.repository.impl";
 import { eq } from "drizzle-orm";
 import { getFullImageUrl } from "@/lib/shared/utils/url";
 import { PgColumn } from "drizzle-orm/pg-core";
-import { UrlService } from "@/lib/core/services/url.service";
+import { UrlService } from "@/lib/core/services/url.service.impl";
 
 class PaymentError extends Error {
   constructor(message: string) {

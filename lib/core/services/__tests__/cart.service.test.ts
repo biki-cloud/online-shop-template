@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { CartService } from "../cart.service";
+import { CartService } from "../cart.service.impl";
 import { MockCartRepository } from "@/lib/shared/test-utils/mock-repositories";
 
 describe("CartService", () => {

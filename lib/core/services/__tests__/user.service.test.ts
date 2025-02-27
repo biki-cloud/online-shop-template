@@ -1,8 +1,7 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { UserService } from "../user.service";
+import { UserService } from "../user.service.impl";
 import { MockUserRepository } from "@/lib/shared/test-utils/mock-repositories";
-import { hash } from "bcryptjs";
 import type {
   User,
   CreateUserInput,

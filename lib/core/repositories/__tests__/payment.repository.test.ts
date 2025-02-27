@@ -5,7 +5,6 @@ import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
 import { eq } from "drizzle-orm";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
-import { UrlService } from "@/lib/core/services/url.service";
 
 // Stripeのモック
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({
@@ -26,7 +25,7 @@ jest.mock("@/lib/infrastructure/payments/stripe", () => ({
 }));
 
 // UrlServiceのモック
-jest.mock("@/lib/core/services/url.service", () => ({
+jest.mock("@/lib/core/services/url.service.impl", () => ({
   UrlService: jest.fn().mockImplementation(() => ({
     getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
   })),

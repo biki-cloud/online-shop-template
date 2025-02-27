@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { ProductService } from "../product.service";
+import { ProductService } from "../product.service.impl";
 import { MockProductRepository } from "@/lib/shared/test-utils/mock-repositories";
 import type {
   Product,

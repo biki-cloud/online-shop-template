@@ -10,21 +10,12 @@ import {
   getCurrentUser,
 } from "../user";
 import { MockUserRepository } from "@/lib/shared/test-utils/mock-repositories";
-import { UserService } from "@/lib/core/services/user.service";
-import { getSessionService } from "@/lib/di/container";
-import type { User as DbUser } from "@/lib/infrastructure/db/schema";
-import * as bcryptjs from "bcryptjs";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { getContainer } from "@/lib/di/container";
+import { UserService } from "@/lib/core/services/user.service.impl";
 import { IUserService } from "@/lib/core/services/interfaces/user.service";
-import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
 import { ISessionService } from "@/lib/core/services/interfaces/session.service";
 import { UserRole } from "@/lib/core/domain/user";
 import { jest } from "@jest/globals";
-import { getAuthService, getUserService } from "@/lib/di/container";
 import { User } from "@/lib/core/domain/user";
-import type { CreateUserInput, UpdateUserInput } from "@/lib/core/domain/user";
 import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 
 jest.mock("next/navigation", () => ({
