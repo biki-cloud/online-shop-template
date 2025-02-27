@@ -1,4 +1,4 @@
-import { OrderRepository } from "../order.repository";
+import { OrderRepository } from "../order.repository.impl";
 import { mockDb } from "@/lib/shared/test-utils/mock-repositories";
 import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
 import { eq } from "drizzle-orm";

@@ -1,5 +1,5 @@
 import { Cart, CartItem, CreateCartInput } from "@/lib/core/domain/cart";
-import { IBaseRepository } from "../base.repository";
+import { IBaseRepository } from "../base.repository.impl";
 
 export interface ICartRepository
   extends IBaseRepository<Cart, CreateCartInput> {

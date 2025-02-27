@@ -6,11 +6,11 @@ import type { IOrderRepository } from "@/lib/core/repositories/interfaces/order.
 import type { IPaymentRepository } from "@/lib/core/repositories/interfaces/payment.repository";
 import type { IUserRepository } from "@/lib/core/repositories/interfaces/user.repository";
 import type { IProductRepository } from "@/lib/core/repositories/interfaces/product.repository";
-import { CartRepository } from "@/lib/core/repositories/cart.repository";
-import { OrderRepository } from "@/lib/core/repositories/order.repository";
-import { PaymentRepository } from "@/lib/core/repositories/payment.repository";
-import { UserRepository } from "@/lib/core/repositories/user.repository";
-import { ProductRepository } from "@/lib/core/repositories/product.repository";
+import { CartRepository } from "@/lib/core/repositories/cart.repository.impl";
+import { OrderRepository } from "@/lib/core/repositories/order.repository.impl";
+import { PaymentRepository } from "@/lib/core/repositories/payment.repository.impl";
+import { UserRepository } from "@/lib/core/repositories/user.repository.impl";
+import { ProductRepository } from "@/lib/core/repositories/product.repository.impl";
 import type { ICartService } from "@/lib/core/services/interfaces/cart.service";
 import type { IProductService } from "@/lib/core/services/interfaces/product.service";
 import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";

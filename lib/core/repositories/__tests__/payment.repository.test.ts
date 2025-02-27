@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { PaymentRepository } from "../payment.repository";
+import { PaymentRepository } from "../payment.repository.impl";
 import { mockDb } from "@/lib/shared/test-utils/mock-repositories";
 import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
 import { eq } from "drizzle-orm";

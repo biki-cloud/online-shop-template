@@ -1,5 +1,5 @@
 import { Order, OrderItem } from "@/lib/infrastructure/db/schema";
-import { IBaseRepository } from "../base.repository";
+import { IBaseRepository } from "../base.repository.impl";
 
 export interface IOrderRepository extends IBaseRepository<Order> {
   findAll(): Promise<Order[]>;

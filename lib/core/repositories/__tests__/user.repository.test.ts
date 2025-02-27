@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { UserRepository } from "../user.repository";
+import { UserRepository } from "../user.repository.impl";
 import { mockDb } from "@/lib/shared/test-utils/mock-repositories";
 import { users } from "@/lib/infrastructure/db/schema";
 import type { User as DbUser } from "@/lib/infrastructure/db/schema";

@@ -5,7 +5,7 @@ import { stripe } from "@/lib/infrastructure/payments/stripe";
 import { orders, orderItems, products } from "@/lib/infrastructure/db/schema";
 import type { Order, OrderItem, Product } from "@/lib/infrastructure/db/schema";
 import type { IPaymentRepository } from "./interfaces/payment.repository";
-import { BaseRepository } from "./base.repository";
+import { BaseRepository } from "./base.repository.impl";
 import { eq } from "drizzle-orm";
 import { getFullImageUrl } from "@/lib/shared/utils/url";
 import { PgColumn } from "drizzle-orm/pg-core";

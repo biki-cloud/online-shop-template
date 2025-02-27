@@ -3,7 +3,7 @@ import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { cartItems, carts, products } from "@/lib/infrastructure/db/schema";
-import { BaseRepository } from "./base.repository";
+import { BaseRepository } from "./base.repository.impl";
 import type { ICartRepository } from "./interfaces/cart.repository";
 import { PgColumn } from "drizzle-orm/pg-core";
 import type { Cart, CartItem, CreateCartInput } from "@/lib/core/domain/cart";

@@ -1,7 +1,7 @@
 import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import { eq } from "drizzle-orm";
 import { PgTable, TableConfig, PgColumn } from "drizzle-orm/pg-core";
-import { BaseRepository } from "../base.repository";
+import { BaseRepository } from "../base.repository.impl";
 import { Database } from "@/lib/infrastructure/db/drizzle";
 
 // テスト用のモックデータ型

@@ -15,7 +15,6 @@ import {
   updateOrder,
 } from "@/app/actions/order";
 import type { Cart, CartItem, Product } from "@/lib/infrastructure/db/schema";
-import { UrlService } from "@/lib/core/services/url.service";
 
 // モックの設定
 jest.mock("next/navigation", () => ({

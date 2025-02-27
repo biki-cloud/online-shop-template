@@ -4,7 +4,7 @@ import { inject, injectable } from "tsyringe";
 import type { Database } from "@/lib/infrastructure/db/drizzle";
 import { products } from "@/lib/infrastructure/db/schema";
 import type { IProductRepository } from "./interfaces/product.repository";
-import { BaseRepository } from "./base.repository";
+import { BaseRepository } from "./base.repository.impl";
 import { PgColumn } from "drizzle-orm/pg-core";
 import type { Product, CreateProductInput } from "@/lib/core/domain/product";
 

@@ -1,4 +1,4 @@
-import { IBaseRepository } from "../base.repository";
+import { IBaseRepository } from "../base.repository.impl";
 import type { Order } from "@/lib/infrastructure/db/schema";
 
 export interface IPaymentRepository extends IBaseRepository<Order> {
