@@ -13,10 +13,10 @@ function getPaymentService(): IPaymentService {
 }
 
 export async function checkoutAction(formData: FormData) {
-  const sessionService = getSessionService();
-  const session = await sessionService.get();
+  const session = await getSessionService().get();
   if (!session) {
     redirect("/sign-in");
+    return;
   }
   const paymentService = getPaymentService();
   await paymentService.processCheckout(session.userId);

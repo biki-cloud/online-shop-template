@@ -7,14 +7,28 @@ import {
   ActionState,
 } from "../middleware";
 import { getCurrentUser } from "@/app/actions/user";
-import { getSession } from "../session";
 
 jest.mock("@/app/actions/user", () => ({
   getCurrentUser: jest.fn(),
 }));
 
-jest.mock("../session", () => ({
-  getSession: jest.fn(),
+jest.mock("next/headers", () => ({
+  cookies: jest.fn(),
+}));
+
+jest.mock("next/navigation", () => ({
+  redirect: jest.fn(),
+}));
+
+const mockSessionService = {
+  get: jest.fn(),
+  set: jest.fn(),
+  clear: jest.fn(),
+  refresh: jest.fn(),
+};
+
+jest.mock("@/lib/di/container", () => ({
+  getSessionService: jest.fn(() => mockSessionService),
 }));
 
 describe("Auth Middleware", () => {
@@ -24,10 +38,12 @@ describe("Auth Middleware", () => {
     name: "Test User",
     role: "user",
     passwordHash: "hashedPassword123",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date("2025-02-27T11:39:29.748Z"),
+    updatedAt: new Date("2025-02-27T11:39:29.748Z"),
     deletedAt: null,
   };
+
+  const defaultState: ActionState = { data: {} };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -35,40 +51,32 @@ describe("Auth Middleware", () => {
 
   describe("validatedAction", () => {
     const schema = z.object({
-      email: z.string().email(),
-      password: z.string().min(8),
+      name: z.string(),
     });
 
-    const mockAction = jest.fn();
-    const validatedActionFn = validatedAction(schema, mockAction);
-
-    it("should call action with valid data", async () => {
+    it("should validate and execute action with valid data", async () => {
+      const action = jest.fn();
       const formData = new FormData();
-      formData.append("email", "test@example.com");
-      formData.append("password", "password123");
+      formData.append("name", "test");
 
-      const prevState = {};
-      await validatedActionFn(prevState, formData);
+      await validatedAction(schema, action)(defaultState, formData);
 
-      expect(mockAction).toHaveBeenCalledWith(
-        {
-          email: "test@example.com",
-          password: "password123",
-        },
+      expect(action).toHaveBeenCalledWith({ name: "test" }, formData);
+    });
+
+    it("should return validation error with invalid data", async () => {
+      const action = jest.fn();
+      const formData = new FormData();
+
+      const result = await validatedAction(schema, action)(
+        defaultState,
         formData
       );
-    });
 
-    it("should return error for invalid data", async () => {
-      const formData = new FormData();
-      formData.append("email", "invalid-email");
-      formData.append("password", "123");
-
-      const prevState = {};
-      const result = await validatedActionFn(prevState, formData);
-
-      expect(result).toHaveProperty("error");
-      expect(mockAction).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        error: "Required",
+      });
+      expect(action).not.toHaveBeenCalled();
     });
   });
 
@@ -77,60 +85,52 @@ describe("Auth Middleware", () => {
       name: z.string(),
     });
 
-    const mockAction = jest.fn();
-    const validatedActionWithUserFn = validatedActionWithUser(
-      schema,
-      mockAction
-    );
-
-    it("should call action with valid data and authenticated user", async () => {
+    it("should validate and execute action with valid data and user session", async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-
+      const action = jest.fn();
       const formData = new FormData();
-      formData.append("name", "New Name");
+      formData.append("name", "test");
 
-      const prevState = {};
-      await validatedActionWithUserFn(prevState, formData);
+      await validatedActionWithUser(schema, action)(defaultState, formData);
 
-      expect(mockAction).toHaveBeenCalledWith(
-        { name: "New Name" },
-        formData,
-        mockUser
-      );
+      expect(action).toHaveBeenCalledWith({ name: "test" }, formData, mockUser);
     });
 
-    it("should throw error when user is not authenticated", async () => {
+    it("should redirect to sign-in when no session", async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(null);
-
+      const action = jest.fn();
       const formData = new FormData();
-      formData.append("name", "New Name");
+      formData.append("name", "test");
 
-      const prevState = {};
       await expect(
-        validatedActionWithUserFn(prevState, formData)
+        validatedActionWithUser(schema, action)(defaultState, formData)
       ).rejects.toThrow("User is not authenticated");
 
-      expect(mockAction).not.toHaveBeenCalled();
+      expect(action).not.toHaveBeenCalled();
     });
 
-    it("should return error for invalid data", async () => {
+    it("should return validation error with invalid data", async () => {
       (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
-
+      const action = jest.fn();
       const formData = new FormData();
-      // name フィールドを省略して無効なデータを作成
 
-      const prevState = {};
-      const result = await validatedActionWithUserFn(prevState, formData);
+      const result = await validatedActionWithUser(schema, action)(
+        defaultState,
+        formData
+      );
 
-      expect(result).toHaveProperty("error");
-      expect(mockAction).not.toHaveBeenCalled();
+      expect(result).toEqual({
+        error: "Required",
+      });
+      expect(action).not.toHaveBeenCalled();
     });
   });
 
   describe("checkAdmin", () => {
     it("should return true for admin user", async () => {
-      (getSession as jest.Mock).mockResolvedValue({
-        user: { id: 1, role: "admin" },
+      mockSessionService.get.mockResolvedValue({
+        userId: 1,
+        role: "admin",
       });
 
       const isAdmin = await checkAdmin();
@@ -138,8 +138,9 @@ describe("Auth Middleware", () => {
     });
 
     it("should return false for non-admin user", async () => {
-      (getSession as jest.Mock).mockResolvedValue({
-        user: { id: 1, role: "user" },
+      mockSessionService.get.mockResolvedValue({
+        userId: 1,
+        role: "user",
       });
 
       const isAdmin = await checkAdmin();
@@ -147,7 +148,7 @@ describe("Auth Middleware", () => {
     });
 
     it("should return false when no session exists", async () => {
-      (getSession as jest.Mock).mockResolvedValue(null);
+      mockSessionService.get.mockResolvedValue(null);
 
       const isAdmin = await checkAdmin();
       expect(isAdmin).toBe(false);

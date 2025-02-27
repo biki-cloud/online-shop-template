@@ -8,6 +8,7 @@ import type {
   CreateUserInput,
   UpdateUserInput,
 } from "@/lib/core/domain/user";
+import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashedPassword"),
@@ -30,6 +31,24 @@ describe("UserService", () => {
     deletedAt: null,
   };
 
+  const mockAuthService: IAuthService = {
+    signIn: jest.fn(),
+    signUp: jest.fn(),
+    signOut: jest.fn(),
+    validateSession: jest.fn(),
+    refreshSession: jest.fn(),
+    updatePassword: jest.fn(),
+    getSessionUser: jest.fn(),
+    verifyToken: jest.fn(),
+    generateToken: jest.fn(),
+    hashPassword: jest.fn(),
+    comparePasswords: jest
+      .fn()
+      .mockImplementation(async (plainText: string, hashedPassword: string) => {
+        return plainText === "password123";
+      }),
+  };
+
   beforeEach(() => {
     // モックリポジトリの初期化
     mockUserRepository = new MockUserRepository();
@@ -42,6 +61,7 @@ describe("UserService", () => {
 
     // DIコンテナの設定
     container.register("UserRepository", { useValue: mockUserRepository });
+    container.register("AuthService", { useValue: mockAuthService });
 
     // UserServiceのインスタンス化
     userService = container.resolve(UserService);
@@ -98,7 +118,7 @@ describe("UserService", () => {
     const createInput: CreateUserInput = {
       email: "test@example.com",
       name: "Test User",
-      password: "password123",
+      passwordHash: "hashedPassword",
       role: "user",
     };
 
@@ -109,13 +129,7 @@ describe("UserService", () => {
       const user = await userService.create(createInput);
 
       expect(user).toEqual(mockUser);
-      expect(hash).toHaveBeenCalledWith("password123", 10);
-      expect(mockUserRepository.create).toHaveBeenCalledWith({
-        email: createInput.email,
-        name: createInput.name,
-        role: createInput.role,
-        passwordHash: "hashedPassword",
-      });
+      expect(mockUserRepository.create).toHaveBeenCalledWith(createInput);
     });
 
     it("should throw error when user with email already exists", async () => {
@@ -155,21 +169,18 @@ describe("UserService", () => {
       expect(mockUserRepository.update).toHaveBeenCalledWith(1, updateInput);
     });
 
-    it("should update password if provided", async () => {
+    it("should update password hash", async () => {
       jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(null);
       jest.spyOn(mockUserRepository, "update").mockResolvedValue(mockUser);
 
       const updateInput: UpdateUserInput = {
-        password: "newPassword",
+        passwordHash: "newHashedPassword",
       };
 
       const user = await userService.update(1, updateInput);
 
       expect(user).toEqual(mockUser);
-      expect(hash).toHaveBeenCalledWith("newPassword", 10);
-      expect(mockUserRepository.update).toHaveBeenCalledWith(1, {
-        passwordHash: "hashedPassword",
-      });
+      expect(mockUserRepository.update).toHaveBeenCalledWith(1, updateInput);
     });
 
     it("should throw error when updating email to one that already exists", async () => {
@@ -219,6 +230,9 @@ describe("UserService", () => {
   describe("validatePassword", () => {
     it("should return user when email and password are valid", async () => {
       jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
+      (mockAuthService.comparePasswords as jest.Mock).mockResolvedValueOnce(
+        true
+      );
 
       const user = await userService.validatePassword(
         "test@example.com",
@@ -228,6 +242,10 @@ describe("UserService", () => {
       expect(user).toEqual(mockUser);
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         "test@example.com"
+      );
+      expect(mockAuthService.comparePasswords).toHaveBeenCalledWith(
+        "password123",
+        "hashedPassword"
       );
     });
 
@@ -247,7 +265,9 @@ describe("UserService", () => {
 
     it("should return null when password is invalid", async () => {
       jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
-      jest.spyOn(require("bcryptjs"), "compare").mockResolvedValueOnce(false);
+      (mockAuthService.comparePasswords as jest.Mock).mockResolvedValueOnce(
+        false
+      );
 
       const user = await userService.validatePassword(
         "test@example.com",
@@ -257,6 +277,10 @@ describe("UserService", () => {
       expect(user).toBeNull();
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         "test@example.com"
+      );
+      expect(mockAuthService.comparePasswords).toHaveBeenCalledWith(
+        "wrongpassword",
+        "hashedPassword"
       );
     });
   });

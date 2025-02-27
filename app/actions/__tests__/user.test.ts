@@ -20,10 +20,53 @@ import { getContainer } from "@/lib/di/container";
 import { IUserService } from "@/lib/core/services/interfaces/user.service";
 import { createCheckoutSession } from "@/lib/infrastructure/payments/stripe";
 import { ISessionService } from "@/lib/core/services/interfaces/session.service";
-import type { UserRole } from "@/lib/core/domain/user";
+import { UserRole } from "@/lib/core/domain/user";
+import { jest } from "@jest/globals";
+import { getAuthService, getUserService } from "@/lib/di/container";
+import { User } from "@/lib/core/domain/user";
+import type { CreateUserInput, UpdateUserInput } from "@/lib/core/domain/user";
+import type { IAuthService } from "@/lib/core/services/interfaces/auth.service";
 
-const mockSessionService = {
-  get: jest.fn().mockResolvedValue({ userId: 1 }),
+jest.mock("next/navigation", () => ({
+  redirect: jest.fn(),
+}));
+
+const mockUser: User = {
+  id: 1,
+  name: "Test User",
+  email: "test@example.com",
+  passwordHash: "hashedPassword123",
+  role: "user" as UserRole,
+  createdAt: new Date("2025-02-27T11:39:29.748Z"),
+  updatedAt: new Date("2025-02-27T11:39:29.748Z"),
+  deletedAt: null,
+};
+
+const mockUserService: jest.Mocked<IUserService> = {
+  findById: jest.fn(),
+  findByEmail: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  validatePassword: jest.fn(),
+};
+
+const mockAuthService: jest.Mocked<IAuthService> = {
+  signIn: jest.fn(),
+  signUp: jest.fn(),
+  signOut: jest.fn(),
+  validateSession: jest.fn(),
+  refreshSession: jest.fn(),
+  updatePassword: jest.fn(),
+  getSessionUser: jest.fn(),
+  verifyToken: jest.fn(),
+  generateToken: jest.fn(),
+  hashPassword: jest.fn(),
+  comparePasswords: jest.fn(),
+};
+
+const mockSessionService: jest.Mocked<ISessionService> = {
+  get: jest.fn(),
   set: jest.fn(),
   clear: jest.fn(),
   refresh: jest.fn(),
@@ -31,27 +74,14 @@ const mockSessionService = {
 
 jest.mock("@/lib/di/container", () => ({
   getSessionService: jest.fn(() => mockSessionService),
+  getUserService: jest.fn(() => mockUserService),
+  getAuthService: jest.fn(() => mockAuthService),
 }));
 
 jest.mock("@/lib/infrastructure/payments/stripe");
 
-jest.mock("bcryptjs", () => ({
-  compare: jest.fn(() => Promise.resolve(true)),
-  hash: jest.fn(() => Promise.resolve("hashedPassword")),
-}));
-
 describe("User Actions", () => {
   let mockUserRepository: MockUserRepository;
-  const mockUser: DbUser = {
-    id: 1,
-    email: "test@example.com",
-    name: "Test User",
-    role: "user",
-    passwordHash: "hashedPassword123",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null,
-  };
 
   beforeEach(() => {
     // モックリポジトリの初期化
@@ -74,43 +104,43 @@ describe("User Actions", () => {
 
   describe("getUserById", () => {
     it("should return user when found", async () => {
-      jest.spyOn(mockUserRepository, "findById").mockResolvedValue(mockUser);
+      mockUserService.findById.mockResolvedValue(mockUser);
 
       const result = await getUserById(1);
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(1);
+      expect(mockUserService.findById).toHaveBeenCalledWith(1);
     });
 
     it("should return null when user not found", async () => {
-      jest.spyOn(mockUserRepository, "findById").mockResolvedValue(null);
+      mockUserService.findById.mockResolvedValue(null);
 
       const result = await getUserById(1);
 
       expect(result).toBeNull();
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(1);
+      expect(mockUserService.findById).toHaveBeenCalledWith(1);
     });
   });
 
   describe("getUserByEmail", () => {
     it("should return user when found", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
+      mockUserService.findByEmail.mockResolvedValue(mockUser);
 
       const result = await getUserByEmail("test@example.com");
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
         "test@example.com"
       );
     });
 
     it("should return null when user not found", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(null);
+      mockUserService.findByEmail.mockResolvedValue(null);
 
       const result = await getUserByEmail("nonexistent@example.com");
 
       expect(result).toBeNull();
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
         "nonexistent@example.com"
       );
     });
@@ -118,29 +148,32 @@ describe("User Actions", () => {
 
   describe("createUser", () => {
     it("should create new user", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(null);
-      jest.spyOn(mockUserRepository, "create").mockResolvedValue(mockUser);
+      mockUserService.findByEmail.mockResolvedValue(null);
+      mockUserService.create.mockResolvedValue(mockUser);
 
       const createInput = {
         email: "test@example.com",
-        name: "Test User",
         passwordHash: "hashedPassword123",
+        name: "Test User",
         role: "user" as UserRole,
       };
 
       const result = await createUser(createInput);
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.create).toHaveBeenCalled();
+      expect(mockUserService.create).toHaveBeenCalledWith(createInput);
     });
 
     it("should throw error when user with email already exists", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
+      mockUserService.findByEmail.mockResolvedValue(mockUser);
+      mockUserService.create.mockRejectedValue(
+        new Error("このメールアドレスは既に登録されています。")
+      );
 
       const createInput = {
         email: "test@example.com",
-        name: "Test User",
         passwordHash: "hashedPassword123",
+        name: "Test User",
         role: "user" as UserRole,
       };
 
@@ -152,26 +185,36 @@ describe("User Actions", () => {
 
   describe("updateUser", () => {
     it("should update user", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(null);
-      jest.spyOn(mockUserRepository, "update").mockResolvedValue(mockUser);
+      mockUserService.findByEmail.mockResolvedValue(null);
+      mockUserService.update.mockResolvedValue({
+        ...mockUser,
+        name: "Updated User",
+        email: "updated@example.com",
+      });
 
       const updateInput = {
         name: "Updated User",
+        email: "updated@example.com",
       };
 
       const result = await updateUser(1, updateInput);
 
-      expect(result).toEqual(mockUser);
-      expect(mockUserRepository.update).toHaveBeenCalledWith(1, updateInput);
+      expect(result).toEqual({
+        ...mockUser,
+        name: "Updated User",
+        email: "updated@example.com",
+      });
+      expect(mockUserService.update).toHaveBeenCalledWith(1, updateInput);
     });
 
     it("should throw error when updating email to one that already exists", async () => {
-      const existingUser = { ...mockUser, id: 2 };
-      jest
-        .spyOn(mockUserRepository, "findByEmail")
-        .mockResolvedValue(existingUser);
+      mockUserService.findByEmail.mockResolvedValue(mockUser);
+      mockUserService.update.mockRejectedValue(
+        new Error("このメールアドレスは既に使用されています。")
+      );
 
       const updateInput = {
+        name: "Updated User",
         email: "existing@example.com",
       };
 
@@ -183,41 +226,27 @@ describe("User Actions", () => {
 
   describe("deleteUser", () => {
     it("should delete user successfully", async () => {
-      jest.spyOn(mockUserRepository, "delete").mockResolvedValue(true);
+      mockUserService.delete.mockResolvedValue(true);
 
       const result = await deleteUser(1);
 
       expect(result).toBe(true);
-      expect(mockUserRepository.delete).toHaveBeenCalledWith(1);
+      expect(mockUserService.delete).toHaveBeenCalledWith(1);
     });
 
     it("should return false when user deletion fails", async () => {
-      jest.spyOn(mockUserRepository, "delete").mockResolvedValue(false);
+      mockUserService.delete.mockResolvedValue(false);
 
       const result = await deleteUser(1);
 
       expect(result).toBe(false);
-      expect(mockUserRepository.delete).toHaveBeenCalledWith(1);
+      expect(mockUserService.delete).toHaveBeenCalledWith(1);
     });
   });
 
   describe("validateUserPassword", () => {
     it("should return user when password is valid", async () => {
-      const mockUser = {
-        id: 1,
-        email: "test@example.com",
-        name: "Test User",
-        passwordHash: "hashedPassword",
-        role: "user",
-        createdAt: new Date("2025-02-15T21:41:37.040Z"),
-        updatedAt: new Date("2025-02-15T21:41:37.040Z"),
-        deletedAt: null,
-      };
-
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
-      (bcryptjs.compare as jest.Mock).mockImplementation(() =>
-        Promise.resolve(true)
-      );
+      mockAuthService.signIn.mockResolvedValue(mockUser);
 
       const result = await validateUserPassword(
         "test@example.com",
@@ -225,19 +254,16 @@ describe("User Actions", () => {
       );
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        "test@example.com"
-      );
-      expect((bcryptjs.compare as jest.Mock).mock.calls[0][0]).toBe(
+      expect(mockAuthService.signIn).toHaveBeenCalledWith(
+        "test@example.com",
         "password123"
-      );
-      expect((bcryptjs.compare as jest.Mock).mock.calls[0][1]).toBe(
-        "hashedPassword"
       );
     });
 
     it("should return null when user not found", async () => {
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(null);
+      mockAuthService.signIn.mockRejectedValue(
+        new Error("ユーザーが見つかりません。")
+      );
 
       const result = await validateUserPassword(
         "nonexistent@example.com",
@@ -245,26 +271,15 @@ describe("User Actions", () => {
       );
 
       expect(result).toBeNull();
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        "nonexistent@example.com"
+      expect(mockAuthService.signIn).toHaveBeenCalledWith(
+        "nonexistent@example.com",
+        "password123"
       );
     });
 
     it("should return null when password is invalid", async () => {
-      const mockUser = {
-        id: 1,
-        email: "test@example.com",
-        name: "Test User",
-        passwordHash: "hashedPassword",
-        role: "user",
-        createdAt: new Date("2025-02-15T21:41:37.040Z"),
-        updatedAt: new Date("2025-02-15T21:41:37.040Z"),
-        deletedAt: null,
-      };
-
-      jest.spyOn(mockUserRepository, "findByEmail").mockResolvedValue(mockUser);
-      (bcryptjs.compare as jest.Mock).mockImplementation(() =>
-        Promise.resolve(false)
+      mockAuthService.signIn.mockRejectedValue(
+        new Error("パスワードが正しくありません。")
       );
 
       const result = await validateUserPassword(
@@ -273,36 +288,30 @@ describe("User Actions", () => {
       );
 
       expect(result).toBeNull();
-      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        "test@example.com"
-      );
-      expect((bcryptjs.compare as jest.Mock).mock.calls[0][0]).toBe(
+      expect(mockAuthService.signIn).toHaveBeenCalledWith(
+        "test@example.com",
         "wrongpassword"
-      );
-      expect((bcryptjs.compare as jest.Mock).mock.calls[0][1]).toBe(
-        "hashedPassword"
       );
     });
   });
 
   describe("getCurrentUser", () => {
     it("should return current user when session exists", async () => {
-      mockSessionService.get.mockResolvedValue({ userId: 1 });
-      jest.spyOn(mockUserRepository, "findById").mockResolvedValue(mockUser);
+      mockAuthService.getSessionUser.mockResolvedValue(mockUser);
 
       const result = await getCurrentUser();
 
       expect(result).toEqual(mockUser);
-      expect(mockUserRepository.findById).toHaveBeenCalledWith(1);
+      expect(mockAuthService.getSessionUser).toHaveBeenCalled();
     });
 
     it("should return null when no session exists", async () => {
-      mockSessionService.get.mockResolvedValue(null);
+      mockAuthService.getSessionUser.mockResolvedValue(null);
 
       const result = await getCurrentUser();
 
       expect(result).toBeNull();
-      expect(mockUserRepository.findById).not.toHaveBeenCalled();
+      expect(mockAuthService.getSessionUser).toHaveBeenCalled();
     });
   });
 });

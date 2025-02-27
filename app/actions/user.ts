@@ -40,8 +40,12 @@ export async function validateUserPassword(
   password: string
 ): Promise<User | null> {
   const authService = getAuthService();
-  const user = await authService.signIn(email, password);
-  return user;
+  try {
+    const user = await authService.signIn(email, password);
+    return user;
+  } catch (error) {
+    return null;
+  }
 }
 
 export async function getCurrentUser(): Promise<User | null> {

@@ -21,9 +21,12 @@ const signInSchema = z.object({
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
   const authService = getAuthService();
+  const sessionService = getSessionService();
 
   try {
     const user = await authService.signIn(email, password);
+    await sessionService.set(user);
+
     const redirectTo = formData.get("redirect") as string | null;
     if (redirectTo === "checkout") {
       return createCheckoutSession({
@@ -35,7 +38,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
     return { redirect: "/home" };
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Invalid credentials",
+      error: error instanceof Error ? error.message : "無効な認証情報です",
       email,
       password,
     };
@@ -43,17 +46,20 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 });
 
 const signUpSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  name: z.string().min(1),
+  email: z.string().email().min(3).max(255),
+  password: z.string().min(8).max(100),
+  name: z.string().min(1).max(100),
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   const { email, password, name } = data;
   const authService = getAuthService();
+  const sessionService = getSessionService();
 
   try {
     const user = await authService.signUp(email, password, name);
+    await sessionService.set(user);
+
     const redirectTo = formData.get("redirect") as string | null;
     if (redirectTo === "checkout") {
       return createCheckoutSession({
@@ -65,7 +71,10 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
     return { redirect: "/home" };
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Failed to create user",
+      error:
+        error instanceof Error
+          ? error.message
+          : "このメールアドレスは既に登録されています",
       email,
       password,
       name,
@@ -75,34 +84,42 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
 
 export async function signOut() {
   const authService = getAuthService();
+  const sessionService = getSessionService();
+
   await authService.signOut();
+  await sessionService.clear();
   redirect("/sign-in");
 }
 
-const updatePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(8).max(100),
-    newPassword: z.string().min(8).max(100),
-    confirmPassword: z.string().min(8).max(100),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "パスワードが一致しません",
-    path: ["confirmPassword"],
-  });
+const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(8).max(100),
+  newPassword: z.string().min(8).max(100),
+  confirmPassword: z.string().min(8).max(100),
+});
 
 export const updatePassword = validatedActionWithUser(
   updatePasswordSchema,
-  async (data, _, user) => {
+  async (data, formData, user) => {
     const { currentPassword, newPassword } = data;
     const authService = getAuthService();
 
     try {
+      const isValid = await authService.comparePasswords(
+        currentPassword,
+        user.passwordHash
+      );
+      if (!isValid) {
+        return { error: "現在のパスワードが正しくありません" };
+      }
+
       await authService.updatePassword(user.id, currentPassword, newPassword);
       return { success: "パスワードを更新しました。" };
     } catch (error) {
       return {
         error:
-          error instanceof Error ? error.message : "Failed to update password",
+          error instanceof Error
+            ? error.message
+            : "パスワードの更新に失敗しました",
       };
     }
   }
@@ -114,7 +131,7 @@ const deleteAccountSchema = z.object({
 
 export const deleteAccount = validatedActionWithUser(
   deleteAccountSchema,
-  async (data, _, user) => {
+  async (data, formData, user) => {
     const { password } = data;
     const authService = getAuthService();
     const userService = getUserService();
@@ -134,30 +151,33 @@ export const deleteAccount = validatedActionWithUser(
     } catch (error) {
       return {
         error:
-          error instanceof Error ? error.message : "Failed to delete account",
+          error instanceof Error
+            ? error.message
+            : "アカウントの削除に失敗しました",
       };
     }
   }
 );
 
 const updateAccountSchema = z.object({
-  name: z.string().min(1, "名前は必須です").max(100),
-  email: z.string().email("メールアドレスの形式が正しくありません"),
+  name: z.string().min(1).max(100),
+  email: z.string().email().min(3).max(255),
 });
 
 export const updateAccount = validatedActionWithUser(
   updateAccountSchema,
-  async (data, _, user) => {
-    const { name, email } = data;
+  async (data, formData, user) => {
     const userService = getUserService();
 
     try {
-      await userService.update(user.id, { name, email });
+      await userService.update(user.id, data);
       return { success: "アカウント情報を更新しました。" };
     } catch (error) {
       return {
         error:
-          error instanceof Error ? error.message : "Failed to update account",
+          error instanceof Error
+            ? error.message
+            : "アカウントの更新に失敗しました",
       };
     }
   }
