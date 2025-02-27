@@ -41,7 +41,7 @@ jest.mock("@/lib/infrastructure/payments/stripe", () => ({
 
 jest.mock("../user", () => ({
   getCurrentUser: jest
-    .fn()
+    .fn<() => Promise<User | null>>()
     .mockImplementation(async () => Promise.resolve(null)),
 }));
 
@@ -213,7 +213,7 @@ describe("Auth Actions", () => {
 
   describe("updatePassword", () => {
     it("should update password successfully", async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
       mockAuthService.comparePasswords.mockResolvedValue(true);
       mockAuthService.updatePassword.mockResolvedValue();
 
@@ -233,7 +233,7 @@ describe("Auth Actions", () => {
     });
 
     it("should return error for invalid current password", async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
       mockAuthService.comparePasswords.mockResolvedValue(false);
 
       const formData = new FormData();
@@ -251,7 +251,7 @@ describe("Auth Actions", () => {
 
   describe("deleteAccount", () => {
     it("should delete account successfully", async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
       mockAuthService.comparePasswords.mockResolvedValue(true);
       mockUserService.delete.mockResolvedValue(true);
 
@@ -266,7 +266,7 @@ describe("Auth Actions", () => {
     });
 
     it("should return error for invalid password", async () => {
-      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
       mockAuthService.comparePasswords.mockResolvedValue(false);
 
       const formData = new FormData();
