@@ -7,7 +7,7 @@ import type {
   CreateUserInput,
   UpdateUserInput,
 } from "@/lib/core/domain/user";
-import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
+import { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashedPassword"),

@@ -4,7 +4,7 @@ import { OrderService } from "../order.service.impl";
 import { IOrderRepository } from "@/lib/core/repositories/interfaces/order.repository.interface";
 import type { Order, OrderItem } from "@/lib/core/domain/order";
 import type { CreateOrderInput } from "@/lib/core/domain/order";
-import type { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import type { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
 
 const mockSessionService: jest.Mocked<ISessionService> = {
   get: jest.fn(),
