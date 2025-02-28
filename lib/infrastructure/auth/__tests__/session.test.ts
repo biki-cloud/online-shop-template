@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { getSessionService } from "@/lib/di/container";
-import { User, UserRole } from "@/lib/core/domain/user";
-import { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import { User, UserRole } from "@/lib/core/domain/user.domain";
+import { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
 
 jest.mock("next/headers", () => ({
   cookies: jest.fn(),
