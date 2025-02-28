@@ -3,8 +3,8 @@
 import "reflect-metadata";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import type { INotificationService } from "@/lib/core/services/interfaces/notification.service";
-import type { NotificationPayload } from "@/lib/core/domain/notification";
+import type { INotificationService } from "@/lib/core/services/interfaces/notification.service.interface";
+import type { NotificationPayload } from "@/lib/core/domain/notification.domain";
 import {
   notificationContainer,
   initializeNotificationContainer,

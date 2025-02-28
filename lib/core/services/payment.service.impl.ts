@@ -6,7 +6,7 @@ import { stripe } from "@/lib/infrastructure/payments/stripe";
 import type { IPaymentRepository } from "../repositories/interfaces/payment.repository.interface";
 import type { ICartRepository } from "../repositories/interfaces/cart.repository.interface";
 import type { IOrderRepository } from "../repositories/interfaces/order.repository.interface";
-import type { Cart, CartItem } from "@/lib/core/domain/cart";
+import type { Cart, CartItem } from "@/lib/core/domain/cart.domain";
 import type { IPaymentService } from "./interfaces/payment.service.interface";
 import { UrlService } from "./url.service.impl";
 import type { IUrlService } from "./interfaces/url.service.interface";

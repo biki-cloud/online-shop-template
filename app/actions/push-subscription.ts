@@ -7,8 +7,8 @@ import {
   initializeServerNotificationContainer,
 } from "@/lib/di/server-notification-container";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
-import type { PushSubscriptionService } from "@/lib/core/services/push-subscription.service";
-import type { WebPushSubscription } from "@/lib/core/repositories/interfaces/push-subscription.repository";
+import type { PushSubscriptionService } from "@/lib/core/services/push-subscription.service.impl";
+import type { WebPushSubscription } from "@/lib/core/repositories/interfaces/push-subscription.repository.interface";
 
 export async function savePushSubscription(subscription: WebPushSubscription) {
   try {

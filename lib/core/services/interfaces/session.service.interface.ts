@@ -1,4 +1,4 @@
-import type { User } from "@/lib/core/domain/user";
+import type { User } from "@/lib/core/domain/user.domain";
 
 export interface ISessionService {
   get(): Promise<{ userId: number; role: string } | null>;

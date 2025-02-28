@@ -1,5 +1,5 @@
 import type { PushSubscription } from "@/lib/infrastructure/db/schema";
-import type { WebPushSubscription } from "@/lib/core/repositories/interfaces/push-subscription.repository";
+import type { WebPushSubscription } from "@/lib/core/repositories/interfaces/push-subscription.repository.interface";
 
 export interface IPushSubscriptionService {
   saveSubscription(

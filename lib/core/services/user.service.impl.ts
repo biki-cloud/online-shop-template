@@ -3,7 +3,7 @@ import type {
   User,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
+} from "@/lib/core/domain/user.domain";
 import type { IUserRepository } from "../repositories/interfaces/user.repository.interface";
 import type { IUserService } from "./interfaces/user.service.interface";
 import type { IAuthService } from "./interfaces/auth.service.interface";

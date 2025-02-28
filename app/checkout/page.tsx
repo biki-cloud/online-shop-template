@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { container, getSessionService } from "@/lib/di/container";
-import type { CartItem } from "@/lib/core/domain/cart";
-import type { Product } from "@/lib/core/domain/product";
-import type { ICartService } from "@/lib/core/services/interfaces/cart.service";
+import type { CartItem } from "@/lib/core/domain/cart.domain";
+import type { Product } from "@/lib/core/domain/product.domain";
+import type { ICartService } from "@/lib/core/services/interfaces/cart.service.interface";
 import { calculateOrderAmount } from "@/lib/shared/utils";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { handleCheckout } from "../actions/checkout";

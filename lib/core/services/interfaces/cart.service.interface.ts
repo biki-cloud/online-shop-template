@@ -1,4 +1,4 @@
-import { Cart, CartItem } from "@/lib/core/domain/cart";
+import { Cart, CartItem } from "@/lib/core/domain/cart.domain";
 
 export interface ICartService {
   findActiveCart(userId: number): Promise<Cart | null>;

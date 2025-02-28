@@ -1,4 +1,8 @@
-import { User, CreateUserInput, UpdateUserInput } from "@/lib/core/domain/user";
+import {
+  User,
+  CreateUserInput,
+  UpdateUserInput,
+} from "@/lib/core/domain/user.domain";
 
 export interface IUserService {
   findById(id: number): Promise<User | null>;

@@ -1,4 +1,4 @@
-import { Cart, CartItem, CreateCartInput } from "@/lib/core/domain/cart";
+import { Cart, CartItem, CreateCartInput } from "@/lib/core/domain/cart.domain";
 import { IBaseRepository } from "../base.repository.impl";
 
 export interface ICartRepository

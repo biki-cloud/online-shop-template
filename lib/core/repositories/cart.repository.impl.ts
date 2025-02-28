@@ -6,7 +6,11 @@ import { cartItems, carts, products } from "@/lib/infrastructure/db/schema";
 import { BaseRepository } from "./base.repository.impl";
 import type { ICartRepository } from "./interfaces/cart.repository.interface";
 import { PgColumn } from "drizzle-orm/pg-core";
-import type { Cart, CartItem, CreateCartInput } from "@/lib/core/domain/cart";
+import type {
+  Cart,
+  CartItem,
+  CreateCartInput,
+} from "@/lib/core/domain/cart.domain";
 
 @injectable()
 export class CartRepository

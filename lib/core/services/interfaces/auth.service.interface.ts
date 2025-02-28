@@ -1,4 +1,4 @@
-import type { User } from "@/lib/core/domain/user";
+import type { User } from "@/lib/core/domain/user.domain";
 
 export interface AuthError extends Error {
   code: string;

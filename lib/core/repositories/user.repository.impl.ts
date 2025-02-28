@@ -9,7 +9,7 @@ import type {
   UserRole,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
+} from "@/lib/core/domain/user.domain";
 import type { IUserRepository } from "./interfaces/user.repository.interface";
 
 @injectable()

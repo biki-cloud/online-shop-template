@@ -6,18 +6,10 @@ import type {
   Product,
   User,
 } from "@/lib/infrastructure/db/schema";
-import type { CreateCartInput } from "@/lib/core/domain/cart";
-import type { CreateOrderInput } from "@/lib/core/domain/order";
-import type { CreateProductInput } from "@/lib/core/domain/product";
+import type { CreateCartInput } from "@/lib/core/domain/cart.domain";
+import type { CreateOrderInput } from "@/lib/core/domain/order.domain";
+import type { CreateProductInput } from "@/lib/core/domain/product.domain";
 import type { NewUser } from "@/lib/infrastructure/db/schema";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type { Database } from "@/lib/infrastructure/db/drizzle";
-import type {
-  PgSelectBuilder,
-  PgUpdateBuilder,
-  PgInsertBuilder,
-  PgDeleteBase,
-} from "drizzle-orm/pg-core";
 
 interface CartItemWithProduct extends CartItem {
   product?: {

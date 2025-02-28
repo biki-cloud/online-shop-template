@@ -1,4 +1,4 @@
-import type { EmailOptions } from "@/lib/core/domain/email";
+import type { EmailOptions } from "@/lib/core/domain/email.domain";
 
 export interface IEmailService {
   /**

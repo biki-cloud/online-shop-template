@@ -1,7 +1,7 @@
 import { injectable } from "tsyringe";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import type { User } from "@/lib/core/domain/user";
+import type { User } from "@/lib/core/domain/user.domain";
 import type { ISessionService } from "./interfaces/session.service.interface";
 
 interface SessionPayload {

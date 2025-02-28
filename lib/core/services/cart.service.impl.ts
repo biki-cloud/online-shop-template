@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
 import type { ICartRepository } from "../repositories/interfaces/cart.repository.interface";
 import type { ICartService } from "./interfaces/cart.service.interface";
-import type { Cart, CartItem } from "@/lib/core/domain/cart";
+import type { Cart, CartItem } from "@/lib/core/domain/cart.domain";
 
 @injectable()
 export class CartService implements ICartService {

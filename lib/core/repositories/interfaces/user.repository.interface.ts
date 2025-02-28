@@ -2,7 +2,7 @@ import type {
   User,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
+} from "@/lib/core/domain/user.domain";
 
 export interface IUserRepository {
   findAll(): Promise<User[]>;

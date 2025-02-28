@@ -2,8 +2,8 @@
 
 import { z } from "zod";
 import { getContainer } from "@/lib/di/container";
-import type { IEmailService } from "@/lib/core/services/interfaces/email.service";
-import { EmailTemplates } from "@/lib/core/domain/email";
+import type { IEmailService } from "@/lib/core/services/interfaces/email.service.interface";
+import { EmailTemplates } from "@/lib/core/domain/email.domain";
 
 const testEmailSchema = z.object({
   email: z.string().email(),

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/shared/utils";
-import { Order, OrderItem } from "@/lib/core/domain/order";
+import { Order, OrderItem } from "@/lib/core/domain/order.domain";
 
 interface OrderListProps {
   orders: (Order & { items: OrderItem[] })[];
