@@ -6,7 +6,6 @@ import {
   deleteProduct,
 } from "../product";
 import { revalidatePath } from "next/cache";
-import { getContainer } from "@/lib/di/container";
 import type { Product } from "@/lib/core/domain/product";
 import { getCurrentUser } from "../user";
 

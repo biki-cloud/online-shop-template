@@ -19,8 +19,8 @@
 
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { NotificationRepository } from "@/lib/core/repositories/client-notification.repository";
-import { ClientNotificationService } from "@/lib/core/services/client-notification.service";
+import { NotificationRepository } from "@/lib/core/repositories/client-notification.repository.impl";
+import { ClientNotificationService } from "@/lib/core/services/client-notification.service.impl";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
 
 let isNotificationInitialized = false;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { container } from "@/lib/di/container";
-import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
+import type { IPaymentService } from "@/lib/core/services/interfaces/payment.service.interface";
 
 export const runtime = "nodejs";
 export const preferredRegion = "iad1";

@@ -1,4 +1,4 @@
-import { CartRepository } from "../cart.repository";
+import { CartRepository } from "../cart.repository.impl";
 import { mockDb } from "@/lib/shared/test-utils/mock-repositories";
 import { cartItems, carts, products } from "@/lib/infrastructure/db/schema";
 import { and, eq } from "drizzle-orm";

@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import type { CartItem } from "@/lib/core/domain/cart";
-import type { Product } from "@/lib/core/domain/product";
+import type { CartItem } from "@/lib/core/domain/cart.domain";
+import type { Product } from "@/lib/core/domain/product.domain";
 import { formatPrice } from "@/lib/shared/utils";
 
 interface AnimatedCartItemsProps {

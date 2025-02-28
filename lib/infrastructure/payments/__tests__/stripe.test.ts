@@ -15,7 +15,6 @@ import {
   updateOrder,
 } from "@/app/actions/order";
 import type { Cart, CartItem, Product } from "@/lib/infrastructure/db/schema";
-import { UrlService } from "@/lib/core/services/url.service";
 
 // モックの設定
 jest.mock("next/navigation", () => ({
@@ -33,7 +32,7 @@ jest.mock("@/lib/shared/utils", () => ({
 }));
 
 // UrlServiceのモック
-jest.mock("@/lib/core/services/url.service", () => ({
+jest.mock("@/lib/core/services/url.service.impl", () => ({
   UrlService: jest.fn().mockImplementation(() => ({
     getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
     getFullUrl: jest

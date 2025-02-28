@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { CartItems } from "@/components/cart/cart-items";
 import { CartSummary } from "@/components/cart/cart-summary";
 import { container, getSessionService } from "@/lib/di/container";
-import type { ICartService } from "@/lib/core/services/interfaces/cart.service";
-import type { CartItem } from "@/lib/core/domain/cart";
-import type { Product } from "@/lib/core/domain/product";
+import type { ICartService } from "@/lib/core/services/interfaces/cart.service.interface";
+import type { CartItem } from "@/lib/core/domain/cart.domain";
+import type { Product } from "@/lib/core/domain/product.domain";
 import { ShoppingCart } from "lucide-react";
 
 export default async function CartPage() {

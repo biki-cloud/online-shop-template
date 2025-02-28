@@ -1,5 +1,5 @@
 import { container } from "tsyringe";
-import { UrlService } from "@/lib/core/services/url.service";
+import { UrlService } from "@/lib/core/services/url.service.impl";
 
 export function isValidUrl(url: string): boolean {
   try {

@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 import { redirect } from "next/navigation";
 import { container } from "@/lib/di/container";
-import type { IUrlService } from "@/lib/core/services/interfaces/url.service";
+import type { IUrlService } from "@/lib/core/services/interfaces/url.service.interface";
 import type { Cart, CartItem, Product } from "@/lib/infrastructure/db/schema";
 import { calculateOrderAmount } from "@/lib/shared/utils";
 import {

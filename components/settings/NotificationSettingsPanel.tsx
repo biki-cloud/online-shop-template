@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Bell, BellOff, Send } from "lucide-react";
 import { useNotification } from "@/components/pwa/hooks/useNotification";
-import type { NotificationPayload } from "@/lib/core/domain/notification";
+import type { NotificationPayload } from "@/lib/core/domain/notification.domain";
 import { Suspense } from "react";
 import { useEffect, useState } from "react";
 

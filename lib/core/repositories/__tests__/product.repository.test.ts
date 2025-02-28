@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { ProductRepository } from "../product.repository";
+import { ProductRepository } from "../product.repository.impl";
 import { mockDb } from "@/lib/shared/test-utils/mock-repositories";
 import { products } from "@/lib/infrastructure/db/schema";
 import { and, eq, isNull } from "drizzle-orm";

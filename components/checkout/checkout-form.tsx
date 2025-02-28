@@ -12,8 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShoppingCart, Package, CreditCard } from "lucide-react";
 import { AnimatedCartItems } from "@/components/checkout/animated-cart-items";
-import type { CartItem } from "@/lib/core/domain/cart";
-import type { Product } from "@/lib/core/domain/product";
+import type { CartItem } from "@/lib/core/domain/cart.domain";
+import type { Product } from "@/lib/core/domain/product.domain";
 import { formatPrice } from "@/lib/shared/utils";
 
 interface CheckoutFormProps {

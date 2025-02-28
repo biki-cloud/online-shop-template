@@ -4,7 +4,7 @@ import type {
   User,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
+} from "@/lib/core/domain/user.domain";
 import { getAuthService, getUserService } from "@/lib/di/container";
 
 export async function getUserById(id: number): Promise<User | null> {

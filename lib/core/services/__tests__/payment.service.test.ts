@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { PaymentService } from "../payment.service";
+import { PaymentService } from "../payment.service.impl";
 import {
   MockCartRepository,
   MockOrderRepository,
@@ -8,7 +8,7 @@ import {
 } from "@/lib/shared/test-utils/mock-repositories";
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import { redirect } from "next/navigation";
-import { UrlService } from "../url.service";
+import { UrlService } from "../url.service.impl";
 
 // Stripeのモック
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({

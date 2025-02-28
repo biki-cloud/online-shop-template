@@ -6,7 +6,7 @@ import {
   getPaymentService as getPaymentServiceFromContainer,
 } from "@/lib/di/container";
 import type Stripe from "stripe";
-import { IPaymentService } from "@/lib/core/services/interfaces/payment.service";
+import { IPaymentService } from "@/lib/core/services/interfaces/payment.service.interface";
 
 function getPaymentService(): IPaymentService {
   return getPaymentServiceFromContainer();

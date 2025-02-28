@@ -1,11 +1,10 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { OrderService } from "../order.service";
-import { IOrderRepository } from "@/lib/core/repositories/interfaces/order.repository";
-import { getSessionService } from "@/lib/di/container";
-import type { Order, OrderItem } from "@/lib/core/domain/order";
-import type { CreateOrderInput } from "@/lib/core/domain/order";
-import type { ISessionService } from "@/lib/core/services/interfaces/session.service";
+import { OrderService } from "../order.service.impl";
+import { IOrderRepository } from "@/lib/core/repositories/interfaces/order.repository.interface";
+import type { Order, OrderItem } from "@/lib/core/domain/order.domain";
+import type { CreateOrderInput } from "@/lib/core/domain/order.domain";
+import type { ISessionService } from "@/lib/core/services/interfaces/session.service.interface";
 
 const mockSessionService: jest.Mocked<ISessionService> = {
   get: jest.fn(),

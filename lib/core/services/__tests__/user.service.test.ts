@@ -1,14 +1,13 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
-import { UserService } from "../user.service";
+import { UserService } from "../user.service.impl";
 import { MockUserRepository } from "@/lib/shared/test-utils/mock-repositories";
-import { hash } from "bcryptjs";
 import type {
   User,
   CreateUserInput,
   UpdateUserInput,
-} from "@/lib/core/domain/user";
-import { IAuthService } from "@/lib/core/services/interfaces/auth.service";
+} from "@/lib/core/domain/user.domain";
+import { IAuthService } from "@/lib/core/services/interfaces/auth.service.interface";
 
 jest.mock("bcryptjs", () => ({
   hash: jest.fn().mockResolvedValue("hashedPassword"),

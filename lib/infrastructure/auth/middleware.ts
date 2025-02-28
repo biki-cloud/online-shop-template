@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { User } from "@/lib/core/domain/user";
+import type { User } from "@/lib/core/domain/user.domain";
 import { getCurrentUser } from "@/app/actions/user";
 import { getSessionService } from "@/lib/di/container";
 
