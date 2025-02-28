@@ -2,19 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { getContainer } from "@/lib/di/container";
-import type { IProductService } from "@/lib/core/services/interfaces/product.service";
+import type { IProductService } from "@/lib/core/services/interfaces/product.service.interface";
 import type {
   Product,
   CreateProductInput,
   UpdateProductInput,
-} from "@/lib/core/domain/product";
+} from "@/lib/core/domain/product.domain";
 import { getCurrentUser } from "@/app/actions/user";
 import {
   serverNotificationContainer,
   initializeServerNotificationContainer,
 } from "@/lib/di/server-notification-container";
 import { NOTIFICATION_TOKENS } from "@/lib/core/constants/notification";
-import type { NotificationService } from "@/lib/core/services/server-notification.service";
+import type { NotificationService } from "@/lib/core/services/server-notification.service.impl";
 
 function getProductService() {
   const container = getContainer();

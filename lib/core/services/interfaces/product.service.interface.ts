@@ -2,7 +2,7 @@ import {
   Product,
   CreateProductInput,
   UpdateProductInput,
-} from "@/lib/core/domain/product";
+} from "@/lib/core/domain/product.domain";
 
 export interface IProductService {
   findById(id: number): Promise<Product | null>;
