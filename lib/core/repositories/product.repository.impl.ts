@@ -6,7 +6,10 @@ import { products } from "@/lib/infrastructure/db/schema";
 import type { IProductRepository } from "./interfaces/product.repository.interface";
 import { BaseRepository } from "./base.repository.impl";
 import { PgColumn } from "drizzle-orm/pg-core";
-import type { Product, CreateProductInput } from "@/lib/core/domain/product";
+import type {
+  Product,
+  CreateProductInput,
+} from "@/lib/core/domain/product.domain";
 
 @injectable()
 export class ProductRepository
