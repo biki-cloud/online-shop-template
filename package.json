@@ -24,7 +24,9 @@
     "dev:test": "next dev -p 3010",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:codegen": "playwright codegen http://localhost:3000 --output e2e/generated.spec.ts",
+    "dev:clean": "rm -rf .next && pnpm dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.0.0",
