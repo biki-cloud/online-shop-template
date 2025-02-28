@@ -43,7 +43,6 @@ supabase ディレクトリはローカルの supabase ディレクトリなの�
 将来的に必要になった時点で管理画面を実装
 
 - アーキテクチャの名前
-  - .impl.ts と.interface.ts の名前変更..domain.ts も
   - server か client かまたは両方で動作するのかを示したい
   - domain にバリデーションも集めた方がいいかも
   - dto クラスも作った方が良い？
