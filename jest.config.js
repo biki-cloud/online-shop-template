@@ -26,6 +26,7 @@ module.exports = {
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   collectCoverage: true,
+  coverageReporters: ["json-summary", "text", "lcov"],
   collectCoverageFrom: [
     "**/*.{js,jsx,ts,tsx}",
     "!**/*.d.ts",
