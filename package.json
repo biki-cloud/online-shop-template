@@ -21,6 +21,7 @@
     "db:reset:prd": "dotenv -e .env.prd  drizzle-kit generate && dotenv -e .env.prd  drizzle-kit push && dotenv -e .env.prd  pnpm db:seed",
     "test:unit": "jest --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:dev": "next dev -p 3010",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:e2e:codegen": "playwright codegen http://localhost:3000 --output e2e/generated.spec.ts"
