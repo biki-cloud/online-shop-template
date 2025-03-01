@@ -32,4 +32,7 @@ export async function login(page: Page, email: string, password: string) {
     .locator("form")
     .getByRole("button", { name: "サインイン" })
     .click();
+  await page.getByRole("button", { name: "User menu" }).click();
+  await expect(page.getByText(email)).toBeVisible();
+  await page.goto("/home");
 }

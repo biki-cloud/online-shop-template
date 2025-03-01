@@ -1,10 +1,12 @@
 // 商品を購入できるかのテスト
 import { test, expect } from "@playwright/test";
 import { login } from "./helper";
-import exp from "constants";
 
 test("ログインあり & ユーザーが商品を購入できること", async ({ page }) => {
-  login(page, "test@example.com", "password123");
+  await login(page, "test@example.com", "password123");
+
+  await page.goto("/products");
+  await page.waitForURL("/products");
 
   await expect(
     page.getByRole("button", { name: "Products", exact: true })
@@ -25,11 +27,17 @@ test("ログインあり & ユーザーが商品を購入できること", async
     page.getByRole("button", { name: "カートに追加" })
   ).toBeVisible();
   await page.getByRole("button", { name: "カートに追加" }).click();
+  await page.waitForURL("/cart");
   await expect(page.getByRole("button", { name: "レジに進む" })).toBeVisible();
   await page.getByRole("button", { name: "レジに進む" }).click();
-  await expect(page.getByRole("button", { name: "次へ進む" })).toBeVisible();
+  await page.waitForURL("/checkout");
+  await expect(
+    page.getByRole("button", { name: "注文を確定する" })
+  ).toBeVisible();
   await page.getByRole("button", { name: "注文を確定する" }).click();
+  //   await page.waitForURL("https://checkout.stripe.com/*");
 
+  // stripe購入画面
   await page.waitForSelector('input[name="email"]');
   await page.fill('input[name="email"]', "fff@fff.com");
 
@@ -45,9 +53,8 @@ test("ログインあり & ユーザーが商品を購入できること", async
   await page.waitForSelector('input[name="billingName"]');
   await page.fill('input[name="billingName"]', "eeee");
 
+  await expect(page.getByTestId("hosted-payment-submit-button")).toBeVisible();
   await page.getByTestId("hosted-payment-submit-button").click();
-  await page.waitForTimeout(5000);
-  //   await expect(page.url()).toBe("http://localhost:3000/orders/5");
-  //   await page.goto("http://localhost:3000/orders/5");
+  //   await page.waitForURL("*/orders/*");
   await expect(page.getByText("注文詳細")).toBeVisible();
 });
