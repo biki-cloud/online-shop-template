@@ -55,6 +55,7 @@ test("ログインあり & ユーザーが商品を購入できること", async
 
   await expect(page.getByTestId("hosted-payment-submit-button")).toBeVisible();
   await page.getByTestId("hosted-payment-submit-button").click();
+  await page.waitForTimeout(10000);
   //   await page.waitForURL("*/orders/*");
   await expect(page.getByText("注文詳細")).toBeVisible();
 });
