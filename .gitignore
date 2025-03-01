@@ -43,6 +43,9 @@ postgres_data/
 public/uploads/
 
 .env.prd
+.env.githubactions
+.env.vercel.preproduction
+.env.vercel.production
 
 # next-pwa
 **/public/sw.js

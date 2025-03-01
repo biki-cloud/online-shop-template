@@ -7,7 +7,11 @@ module.exports = {
     "^jose$": "<rootDir>/lib/infrastructure/auth/__mocks__/jose.ts",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
-  testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+  testPathIgnorePatterns: [
+    "<rootDir>/.next/",
+    "<rootDir>/node_modules/",
+    "<rootDir>/e2e/",
+  ],
   transform: {
     "^.+\\.(ts|tsx)$": [
       "ts-jest",
@@ -28,6 +32,7 @@ module.exports = {
     "!**/node_modules/**",
     "!**/.next/**",
     "!**/coverage/**",
+    "!**/e2e/**",
   ],
   coverageThreshold: {
     global: {
