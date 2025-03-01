@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("test", async ({ page }) => {
+test("商品詳細ページが開けること", async ({ page }) => {
   // ページにアクセス
   await page.goto("/home");
   // スクリーンショットを撮る
