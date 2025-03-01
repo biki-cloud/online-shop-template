@@ -20,18 +20,19 @@ test("ユーザー権限でログインできること", async ({ page }) => {
 test("管理者権限でログインできること", async ({ page }) => {
   await page.goto("/sign-in");
   await page.screenshot({ path: "test-results/auth_before-sign-in.png" });
+
   const mail_textbox = await page.getByRole("textbox", {
     name: "メールアドレス",
   });
-  mail_textbox.click();
-  mail_textbox.fill("admin@example.com");
+  await mail_textbox.click();
+  await mail_textbox.fill("admin@example.com");
+
   const password_textbox = await page.getByRole("textbox", {
     name: "パスワード",
   });
-  //   password_textbox.click();
-  //   password_textbox.fill("admin123");
-  await page.getByRole("textbox", { name: "パスワード" }).click();
-  await page.getByRole("textbox", { name: "パスワード" }).fill("admin123");
+  await password_textbox.click();
+  await password_textbox.fill("admin123");
+
   await page
     .locator("form")
     .getByRole("button", { name: "サインイン" })
