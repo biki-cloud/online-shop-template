@@ -34,7 +34,7 @@ jobs:
           pnpm test:coverage
           ls -la coverage/
         env:
-          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           VAPID_EMAIL: ${{ secrets.VAPID_EMAIL }}
           NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
