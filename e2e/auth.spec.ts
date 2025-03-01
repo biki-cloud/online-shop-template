@@ -22,8 +22,8 @@ async function login(page: Page, email: string, password: string) {
 test("ユーザー権限でログインできること", async ({ page }) => {
   await login(page, "test@example.com", "password123");
 
-  await page.getByRole("button", { name: "User menu" }).click();
   await page.waitForTimeout(4000);
+  await page.getByRole("button", { name: "User menu" }).click();
   await expect(page.getByText("test@example.com")).toBeVisible();
 });
 
@@ -32,6 +32,16 @@ test("管理者権限でログインできること", async ({ page }) => {
   await login(page, "admin@example.com", "admin123");
   await page.screenshot({ path: "test-results/auth_after-sign-in.png" });
 
+  await page.waitForTimeout(4000);
   await page.getByRole("button", { name: "User menu" }).click();
   await expect(page.getByText("admin@example.com")).toBeVisible();
+});
+
+test("ログアウトできること", async ({ page }) => {
+  await login(page, "test@example.com", "password123");
+  await page.getByRole("button", { name: "User menu" }).click();
+  await page.getByRole("menuitem", { name: "サインアウト" }).click();
+  await page.waitForTimeout(4000);
+  await page.screenshot({ path: "test-results/auth_sign-out.png" });
+  await expect(page.url()).toBe("http://localhost:3010/sign-in");
 });
