@@ -20,7 +20,13 @@
     "db:reset:prd": "dotenv -e .env.prd  drizzle-kit generate && dotenv -e .env.prd  drizzle-kit push && dotenv -e .env.prd  pnpm db:seed",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "dev:test": "next dev -p 3010",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:codegen": "playwright codegen http://localhost:3000 --output e2e/generated.spec.ts",
+    "dev:clean": "rm -rf .next && pnpm dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.0.0",
@@ -78,6 +84,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.7",
+    "@playwright/test": "^1.50.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/ejs": "^3.1.5",
