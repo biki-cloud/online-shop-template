@@ -5,12 +5,13 @@ export default defineConfig({
   testIgnore: ["**/generated.spec.ts"], // ここでテスト対象外のファイルを指定
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 3,
+  retries: 2,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["html", { open: "never" }], ["list"]],
   use: {
     baseURL: "http://localhost:3010",
     trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
