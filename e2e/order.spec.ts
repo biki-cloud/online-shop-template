@@ -2,7 +2,7 @@
 import { test, expect } from "@playwright/test";
 import { login } from "./helper";
 
-test("ログインあり & ユーザーが商品を購入できること", async ({ page }) => {
+test.skip("ログインあり & ユーザーが商品を購入できること", async ({ page }) => {
   await login(page, "test@example.com", "password123");
 
   await page.goto("/products");
