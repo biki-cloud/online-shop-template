@@ -25,9 +25,9 @@ test("管理者権限でログインできること", async ({ page }) => {
   });
   mail_textbox.click();
   mail_textbox.fill("admin@example.com");
-  //   const password_textbox = await page.getByRole("textbox", {
-  //     name: "パスワード",
-  //   });
+  const password_textbox = await page.getByRole("textbox", {
+    name: "パスワード",
+  });
   //   password_textbox.click();
   //   password_textbox.fill("admin123");
   await page.getByRole("textbox", { name: "パスワード" }).click();
