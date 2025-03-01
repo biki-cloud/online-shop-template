@@ -1,22 +1,25 @@
 import { test, expect, Page } from "@playwright/test";
+import { faker } from "@faker-js/faker/locale/ja";
 
 async function login(page: Page, email: string, password: string) {
   await page.goto("/sign-in");
 
-  const mail_textbox = await page.getByRole("textbox", {
-    name: "メールアドレス",
-  });
-  await mail_textbox.fill(email);
+  await page
+    .getByRole("textbox", {
+      name: "メールアドレス",
+    })
+    .fill(email);
 
-  const password_textbox = await page.getByRole("textbox", {
-    name: "パスワード",
-  });
-  await password_textbox.fill(password);
+  await page
+    .getByRole("textbox", {
+      name: "パスワード",
+    })
+    .fill(password);
 
-  const submit_button = await page
+  await page
     .locator("form")
-    .getByRole("button", { name: "サインイン" });
-  await submit_button.click();
+    .getByRole("button", { name: "サインイン" })
+    .click();
 }
 
 test("ユーザー権限でログインできること", async ({ page }) => {
@@ -44,4 +47,36 @@ test("ログアウトできること", async ({ page }) => {
   await page.waitForTimeout(4000);
   await page.screenshot({ path: "test-results/auth_sign-out.png" });
   await expect(page.url()).toBe("http://localhost:3010/sign-in");
+});
+
+test("ユーザが新規登録できること", async ({ page }) => {
+  await page.goto("/sign-up");
+
+  const email = faker.internet.email();
+  const password = faker.internet.password({
+    length: 12,
+    memorable: true,
+    pattern: /[A-Za-z0-9!@#$%^&*]/,
+    prefix: "A1!",
+  });
+  const name = faker.person.fullName();
+
+  await page.getByRole("textbox", { name: "お名前" }).fill(name);
+  await page
+    .getByRole("textbox", {
+      name: "メールアドレス",
+    })
+    .fill(email);
+
+  await page
+    .getByRole("textbox", {
+      name: "パスワード",
+    })
+    .fill(password);
+  await page.getByRole("button", { name: "アカウント作成" }).click();
+
+  await page.waitForTimeout(4000);
+  await page.screenshot({ path: "test-results/auth_sign-up.png" });
+  await page.getByRole("button", { name: "User menu" }).click();
+  await expect(page.getByText(email)).toBeVisible();
 });
