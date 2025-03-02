@@ -1,8 +1,10 @@
 // 商品を購入できるかのテスト
-import { test, expect } from "@playwright/test";
+import { test, expect, chromium } from "@playwright/test";
 import { login } from "./helper";
 
-test("ログインあり & ユーザーが商品を購入できること", async ({ page }) => {
+test("ログインあり & ユーザーが注文確定画面まで行けること", async ({
+  page,
+}) => {
   await login(page, "test@example.com", "password123");
 
   await page.goto("/products");
@@ -34,28 +36,28 @@ test("ログインあり & ユーザーが商品を購入できること", async
   await expect(
     page.getByRole("button", { name: "注文を確定する" })
   ).toBeVisible();
-  //   await page.getByRole("button", { name: "注文を確定する" }).click();
+  await page.getByRole("button", { name: "注文を確定する" }).click();
   //   await page.waitForURL("https://checkout.stripe.com/*");
-
-  //   // stripe購入画面
-  //   await page.waitForSelector('input[name="email"]');
-  //   await page.fill('input[name="email"]', "fff@fff.com");
-
-  //   await page.waitForSelector('input[name="cardNumber"]');
-  //   await page.fill('input[name="cardNumber"]', "4242 4242 4242 4242");
-
-  //   await page.waitForSelector('input[name="cardExpiry"]');
-  //   await page.fill('input[name="cardExpiry"]', "12 / 29");
-
-  //   await page.waitForSelector('input[name="cardCvc"]');
-  //   await page.fill('input[name="cardCvc"]', "333");
-
-  //   await page.waitForSelector('input[name="billingName"]');
-  //   await page.fill('input[name="billingName"]', "eeee");
-
-  //   await expect(page.getByTestId("hosted-payment-submit-button")).toBeVisible();
-  //   await page.getByTestId("hosted-payment-submit-button").click();
   //   await page.waitForTimeout(10000);
-  //   //   await page.waitForURL("*/orders/*");
-  //   await expect(page.getByText("注文詳細")).toBeVisible();
+
+  // stripe購入画面
+  await page.waitForSelector('input[name="email"]');
+  await page.fill('input[name="email"]', "fff@fff.com");
+
+  await page.waitForSelector('input[name="cardNumber"]');
+  await page.fill('input[name="cardNumber"]', "4242 4242 4242 4242");
+
+  await page.waitForSelector('input[name="cardExpiry"]');
+  await page.fill('input[name="cardExpiry"]', "12 / 29");
+
+  await page.waitForSelector('input[name="cardCvc"]');
+  await page.fill('input[name="cardCvc"]', "333");
+
+  await page.waitForSelector('input[name="billingName"]');
+  await page.fill('input[name="billingName"]', "eeee");
+
+  await expect(page.getByTestId("hosted-payment-submit-button")).toBeVisible();
+  await page.getByTestId("hosted-payment-submit-button").click();
+  await page.waitForURL("*/orders/*");
+  await expect(page.getByText("注文詳細")).toBeVisible();
 });
