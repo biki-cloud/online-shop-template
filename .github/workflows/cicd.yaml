@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
       - name: Run Unit Tests
         run: |
-          pnpm test:coverage
+          pnpm test:unit
           ls -la coverage/
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
