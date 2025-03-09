@@ -28,7 +28,7 @@ test("カートに商品を追加できること", async ({ page }) => {
   ).toBeVisible();
 });
 
-test.skip("カートに２つの商品を追加できること", async ({ page }) => {
+test("カートに２つの商品を追加できること", async ({ page }) => {
   await login(page, "test@example.com", "password123");
 
   // 商品一覧ページに移動
