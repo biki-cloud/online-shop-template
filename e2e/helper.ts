@@ -35,4 +35,5 @@ export async function login(page: Page, email: string, password: string) {
   await page.getByRole("button", { name: "User menu" }).click();
   await expect(page.getByText(email)).toBeVisible();
   await page.goto("/home");
+  await page.waitForURL("/home");
 }

@@ -25,6 +25,7 @@ test("ログインあり & ユーザーが注文確定画面まで行けるこ�
       name: "クラシック ホワイト Tシャツ クラシック ホワイト T",
     })
     .click();
+  await page.waitForURL("/products/*");
   await expect(
     page.getByRole("button", { name: "カートに追加" })
   ).toBeVisible();
