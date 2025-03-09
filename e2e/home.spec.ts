@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("トップページが正しく表示される", async ({ page }) => {
+test("トップページが正しく表示されること", async ({ page }) => {
   await page.goto("/");
 
   // タイトルが正しく表示されることを確認
