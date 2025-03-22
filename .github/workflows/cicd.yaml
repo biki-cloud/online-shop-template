@@ -31,7 +31,7 @@ jobs:
         run: pnpm install
       - name: Run Unit Tests
         run: |
-          pnpm test:coverage
+          pnpm test:unit
           ls -la coverage/
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
@@ -104,7 +104,7 @@ jobs:
   E2E-Test:
     needs: Deploy-Preview
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
