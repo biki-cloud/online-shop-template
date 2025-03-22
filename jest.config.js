@@ -11,6 +11,7 @@ module.exports = {
     "<rootDir>/.next/",
     "<rootDir>/node_modules/",
     "<rootDir>/e2e/",
+    "<rootDir>/playwright-report/",
   ],
   transform: {
     "^.+\\.(ts|tsx)$": [
