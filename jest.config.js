@@ -35,6 +35,8 @@ module.exports = {
     "!**/.next/**",
     "!**/coverage/**",
     "!**/e2e/**",
+    "!**/playwright-report/**",
+    "!**/public/**",
   ],
   coverageThreshold: {
     global: {
