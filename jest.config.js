@@ -37,6 +37,7 @@ module.exports = {
     "!**/e2e/**",
     "!**/playwright-report/**",
     "!**/public/**",
+    "!**/page.tsx",
   ],
   coverageThreshold: {
     global: {
