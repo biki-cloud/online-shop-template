@@ -75,7 +75,7 @@ describe("NotificationRepository", () => {
   });
 
   describe("sendNotification", () => {
-    it("メソッドが正しく呼び出されること", async () => {
+    it("正常にプッシュ通知を送信できること", async () => {
       // モックサブスクリプション
       const mockSubscription = {
         endpoint: "https://example.com/push-endpoint",
@@ -101,6 +101,34 @@ describe("NotificationRepository", () => {
         mockPayload
       );
       expect(result).toBe(true);
+    });
+
+    it("通知送信に失敗した場合にfalseを返すこと", async () => {
+      // モックサブスクリプション
+      const mockSubscription = {
+        endpoint: "https://example.com/push-endpoint",
+      };
+
+      // モック通知ペイロード
+      const mockPayload: NotificationPayload = {
+        title: "テスト通知",
+        body: "これはテスト通知です",
+        url: "https://example.com",
+      };
+
+      // メソッドをスパイして常にfalseを返すようにする
+      jest.spyOn(repository, "sendNotification").mockResolvedValue(false);
+
+      const result = await repository.sendNotification(
+        mockSubscription as any,
+        mockPayload
+      );
+
+      expect(repository.sendNotification).toHaveBeenCalledWith(
+        mockSubscription,
+        mockPayload
+      );
+      expect(result).toBe(false);
     });
   });
 
@@ -136,7 +164,7 @@ describe("NotificationRepository", () => {
   });
 
   describe("getStoredSubscription", () => {
-    it("メソッドが正しく呼び出されること", async () => {
+    it("保存されたサブスクリプションを正常に取得すること", async () => {
       // モックサブスクリプション
       const mockSubscription = {
         endpoint: "https://example.com/push-endpoint",
@@ -151,6 +179,16 @@ describe("NotificationRepository", () => {
 
       expect(repository.getStoredSubscription).toHaveBeenCalled();
       expect(result).toBe(mockSubscription);
+    });
+
+    it("保存されたサブスクリプションがない場合にnullを返すこと", async () => {
+      // メソッドをスパイしてnullを返すようにする
+      jest.spyOn(repository, "getStoredSubscription").mockResolvedValue(null);
+
+      const result = await repository.getStoredSubscription();
+
+      expect(repository.getStoredSubscription).toHaveBeenCalled();
+      expect(result).toBeNull();
     });
   });
 
