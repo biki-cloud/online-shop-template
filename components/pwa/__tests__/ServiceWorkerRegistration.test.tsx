@@ -1,16 +1,6 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { render, act } from "@testing-library/react";
 import { ServiceWorkerRegistration } from "../ServiceWorkerRegistration";
-
-// オリジナルのServiceWorkerRegistrationコンポーネントを使用する前に
-// モジュールをモックしてuseEffectの実行を制御
-jest.mock("../ServiceWorkerRegistration", () => {
-  const originalModule = jest.requireActual("../ServiceWorkerRegistration");
-  return {
-    ...originalModule,
-    ServiceWorkerRegistration: jest.fn().mockImplementation(() => null),
-  };
-});
 
 describe("ServiceWorkerRegistration", () => {
   // オリジナルのwindow.navigatorを保存
@@ -25,9 +15,6 @@ describe("ServiceWorkerRegistration", () => {
     // コンソール出力をモック
     jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(console, "error").mockImplementation(() => {});
-
-    // コンポーネントのモックをリセット
-    jest.mocked(ServiceWorkerRegistration).mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -48,24 +35,6 @@ describe("ServiceWorkerRegistration", () => {
   });
 
   it("serviceWorkerがサポートされている場合、registerが呼ばれる", async () => {
-    // モジュールのモックを実際の実装に戻す
-    jest.mocked(ServiceWorkerRegistration).mockImplementation(() => {
-      React.useEffect(() => {
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then((registration) => {
-              console.log("Service Worker registered:", registration);
-            })
-            .catch((error) => {
-              console.error("Service Worker registration failed:", error);
-            });
-        }
-        return () => {};
-      }, []);
-      return null;
-    });
-
     // serviceWorkerをサポートするnavigatorをモック
     Object.defineProperty(global, "navigator", {
       value: {
@@ -96,24 +65,6 @@ describe("ServiceWorkerRegistration", () => {
   });
 
   it("serviceWorkerがサポートされていない場合、エラーにならない", () => {
-    // モジュールのモックを実際の実装に戻す
-    jest.mocked(ServiceWorkerRegistration).mockImplementation(() => {
-      React.useEffect(() => {
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then((registration) => {
-              console.log("Service Worker registered:", registration);
-            })
-            .catch((error) => {
-              console.error("Service Worker registration failed:", error);
-            });
-        }
-        return () => {};
-      }, []);
-      return null;
-    });
-
     // serviceWorkerをサポートしないnavigatorをモック
     Object.defineProperty(global, "navigator", {
       value: {
@@ -131,24 +82,6 @@ describe("ServiceWorkerRegistration", () => {
   });
 
   it("register処理でエラーが発生した場合、エラーログが出力される", async () => {
-    // モジュールのモックを実際の実装に戻す
-    jest.mocked(ServiceWorkerRegistration).mockImplementation(() => {
-      React.useEffect(() => {
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker
-            .register("/service-worker.js")
-            .then((registration) => {
-              console.log("Service Worker registered:", registration);
-            })
-            .catch((error) => {
-              console.error("Service Worker registration failed:", error);
-            });
-        }
-        return () => {};
-      }, []);
-      return null;
-    });
-
     // registerがエラーをスローするようモック
     const mockError = new Error("Registration failed");
     const errorServiceWorker = {
