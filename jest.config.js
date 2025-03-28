@@ -38,6 +38,17 @@ module.exports = {
     "!**/playwright-report/**",
     "!**/public/**",
     "!**/page.tsx",
+    "!**/layout.tsx",
+    "!**/not-found.tsx",
+    "!**/error.tsx",
+    "!**/loading.tsx",
+    "!**/route.ts",
+    "!**/*.config.{js,ts}",
+    "!**/__tests__/**",
+    "!**/__mocks__/**",
+    "!**/types/**",
+    "!**/test/**",
+    "!**/components/ui/**",
   ],
   coverageThreshold: {
     global: {
