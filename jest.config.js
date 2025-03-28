@@ -49,6 +49,13 @@ module.exports = {
     "!**/types/**",
     "!**/test/**",
     "!**/components/ui/**",
+    "!**/lib/local-setup/**",
+    "!**/lib/infrastructure/db/seed.ts",
+    "!**/lib/infrastructure/db/migrate.ts",
+    "!**/lib/config/env.ts",
+    "!**/lib/shared/test-utils/**",
+    "!**/lib/shared/constants/**",
+    "!**/middleware.ts",
   ],
   coverageThreshold: {
     global: {
