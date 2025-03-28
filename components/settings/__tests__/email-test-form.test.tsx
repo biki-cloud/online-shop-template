@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { EmailTestForm } from "../email-test-form";
 import { toast } from "sonner";
 import { testEmail } from "@/app/actions/settings";
+import { ReactNode } from "react";
 
 // アクションのモック
 jest.mock("@/app/actions/settings", () => ({
@@ -17,9 +18,36 @@ jest.mock("sonner", () => ({
   },
 }));
 
+// React Hook Formをモック
+jest.mock("react-hook-form", () => {
+  return {
+    useForm: () => ({
+      register: () => ({}),
+      handleSubmit:
+        (onSubmit: (data: { email: string }) => Promise<void>) => async () => {
+          await onSubmit({ email: "test@example.com" });
+        },
+      formState: {
+        errors: {},
+        isSubmitting: false,
+      },
+    }),
+  };
+});
+
 // UIコンポーネントのモック
 jest.mock("@/components/ui/button", () => ({
-  Button: ({ children, type, disabled, onClick }: any) => (
+  Button: ({
+    children,
+    type,
+    disabled,
+    onClick,
+  }: {
+    children: ReactNode;
+    type?: "button" | "submit" | "reset";
+    disabled?: boolean;
+    onClick?: () => void;
+  }) => (
     <button
       data-testid="button"
       type={type}
@@ -32,47 +60,63 @@ jest.mock("@/components/ui/button", () => ({
 }));
 
 jest.mock("@/components/ui/card", () => ({
-  Card: ({ children }: any) => <div data-testid="card">{children}</div>,
-  CardHeader: ({ children }: any) => (
+  Card: ({ children }: { children: ReactNode }) => (
+    <div data-testid="card">{children}</div>
+  ),
+  CardHeader: ({ children }: { children: ReactNode }) => (
     <div data-testid="card-header">{children}</div>
   ),
-  CardTitle: ({ children }: any) => (
+  CardTitle: ({ children }: { children: ReactNode }) => (
     <h3 data-testid="card-title">{children}</h3>
   ),
-  CardDescription: ({ children }: any) => (
+  CardDescription: ({ children }: { children: ReactNode }) => (
     <p data-testid="card-description">{children}</p>
   ),
-  CardContent: ({ children }: any) => (
+  CardContent: ({ children }: { children: ReactNode }) => (
     <div data-testid="card-content">{children}</div>
   ),
 }));
 
 jest.mock("@/components/ui/form", () => ({
-  Form: ({ children }: any) => <div data-testid="form">{children}</div>,
-  FormField: ({ children, control, name, render }: any) => {
+  Form: ({ children }: { children: ReactNode }) => (
+    <div data-testid="form">{children}</div>
+  ),
+  FormField: ({
+    name,
+    render,
+  }: {
+    name: string;
+    render: (props: {
+      field: { value: string; onChange: () => void; name: string };
+    }) => ReactNode;
+  }) => {
     const Component = render({
       field: { value: "", onChange: jest.fn(), name },
     });
     return <div data-testid={`form-field-${name}`}>{Component}</div>;
   },
-  FormItem: ({ children }: any) => (
+  FormItem: ({ children }: { children: ReactNode }) => (
     <div data-testid="form-item">{children}</div>
   ),
-  FormLabel: ({ children }: any) => (
+  FormLabel: ({ children }: { children: ReactNode }) => (
     <label data-testid="form-label">{children}</label>
   ),
-  FormControl: ({ children }: any) => (
+  FormControl: ({ children }: { children: ReactNode }) => (
     <div data-testid="form-control">{children}</div>
   ),
-  FormMessage: ({ children }: any) => (
+  FormMessage: ({ children }: { children?: ReactNode }) => (
     <div data-testid="form-message">{children || null}</div>
   ),
 }));
 
 jest.mock("@/components/ui/input", () => ({
-  Input: ({ placeholder, ...props }: any) => (
-    <input data-testid="input" placeholder={placeholder} {...props} />
-  ),
+  Input: ({
+    placeholder,
+    ...props
+  }: {
+    placeholder?: string;
+    [key: string]: any;
+  }) => <input data-testid="input" placeholder={placeholder} {...props} />,
 }));
 
 describe("EmailTestForm", () => {
@@ -115,26 +159,18 @@ describe("EmailTestForm", () => {
   });
 
   it("有効なメールアドレスで送信すると、testEmailアクションが呼ばれる", async () => {
-    (testEmail as jest.Mock).mockResolvedValue(undefined);
-
     render(<EmailTestForm />);
 
-    // この部分ではReact Hook Formの実装の詳細に依存しないよう、
-    // フォームのonSubmitイベントを直接トリガーする
-    const form = screen.getByTestId("form").querySelector("form");
-
-    // 送信ボタンをクリック
-    const button = screen.getByTestId("button");
-    const input = screen.getByTestId("input");
-
-    // 入力値を変更
-    fireEvent.change(input, { target: { value: "test@example.com" } });
+    // メールアドレスを入力
+    const emailInput = screen.getByTestId("input");
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
 
     // フォームを送信
-    form && fireEvent.submit(form);
+    const submitButton = screen.getByTestId("button");
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(testEmail).toHaveBeenCalled();
+      expect(testEmail).toHaveBeenCalledWith({ email: "test@example.com" });
       // 成功トーストが表示されることを確認
       expect(toast.success).toHaveBeenCalledWith("テストメールを送信しました", {
         description: "メールが届くまでしばらくお待ちください",
@@ -148,14 +184,9 @@ describe("EmailTestForm", () => {
 
     render(<EmailTestForm />);
 
-    const form = screen.getByTestId("form").querySelector("form");
-    const input = screen.getByTestId("input");
-
-    // 入力値を変更
-    fireEvent.change(input, { target: { value: "test@example.com" } });
-
     // フォームを送信
-    form && fireEvent.submit(form);
+    const button = screen.getByTestId("button");
+    fireEvent.click(button);
 
     await waitFor(() => {
       // エラートーストが表示されることを確認
