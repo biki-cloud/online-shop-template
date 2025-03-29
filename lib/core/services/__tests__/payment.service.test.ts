@@ -566,4 +566,80 @@ describe("PaymentService", () => {
       expect(mockPaymentRepository.getStripeProducts).toHaveBeenCalled();
     });
   });
+
+  describe("isValidUrl", () => {
+    it("should return true for valid http URLs", () => {
+      const result = (PaymentService as any).isValidUrl("http://example.com");
+      expect(result).toBe(true);
+    });
+
+    it("should return true for valid https URLs", () => {
+      const result = (PaymentService as any).isValidUrl("https://example.com");
+      expect(result).toBe(true);
+    });
+
+    it("should return false for invalid URLs", () => {
+      const result = (PaymentService as any).isValidUrl("not-a-url");
+      expect(result).toBe(false);
+    });
+
+    it("should return false for URLs with unsupported protocols", () => {
+      const result = (PaymentService as any).isValidUrl("ftp://example.com");
+      expect(result).toBe(false);
+    });
+
+    it("should return false for null or undefined inputs", () => {
+      expect((PaymentService as any).isValidUrl(null)).toBe(false);
+      expect((PaymentService as any).isValidUrl(undefined)).toBe(false);
+    });
+  });
+
+  describe("getFullImageUrl", () => {
+    beforeEach(() => {
+      // リセット
+      mockUrlService.getBaseUrl.mockReturnValue("http://localhost:3000");
+    });
+
+    it("should return undefined for null or undefined inputs", () => {
+      const result = (paymentService as any).getFullImageUrl(null);
+      expect(result).toBeUndefined();
+    });
+
+    it("should return the original URL if it's already a valid full URL", () => {
+      const fullUrl = "https://example.com/image.jpg";
+      const result = (paymentService as any).getFullImageUrl(fullUrl);
+      expect(result).toBe(fullUrl);
+    });
+
+    it("should convert relative paths to full URLs", () => {
+      const relativePath = "/images/product.jpg";
+      const result = (paymentService as any).getFullImageUrl(relativePath);
+      expect(result).toBe("http://localhost:3000/images/product.jpg");
+    });
+
+    it("should handle paths without leading slash", () => {
+      const path = "images/product.jpg";
+      const result = (paymentService as any).getFullImageUrl(path);
+      expect(result).toBe("http://localhost:3000/images/product.jpg");
+    });
+
+    it("should return undefined when baseUrl is not available", () => {
+      mockUrlService.getBaseUrl.mockReturnValue("");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBeUndefined();
+    });
+
+    it("should handle baseUrl with trailing slash", () => {
+      mockUrlService.getBaseUrl.mockReturnValue("http://localhost:3000/");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBe("http://localhost:3000/image.jpg");
+    });
+
+    it("should return undefined when resulting URL is invalid", () => {
+      // PaymentServiceのisValidUrlの結果をモックするために、mockUrlServiceを調整する
+      mockUrlService.getBaseUrl.mockReturnValue("invalid:url");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBeUndefined();
+    });
+  });
 });

@@ -195,4 +195,59 @@ describe("CartRepository", () => {
       expect(result).toBe(false);
     });
   });
+
+  describe("clearCart", () => {
+    it("should update cart status to completed when active cart exists", async () => {
+      const db = mockDb as any;
+      const userId = 1;
+
+      // findActiveCartByUserId のモック
+      db.select.mockReturnThis();
+      db.from.mockReturnThis();
+      db.where.mockReturnThis();
+      db.limit.mockReturnValueOnce([mockCart]);
+
+      // update のモック
+      db.update.mockReturnThis();
+      db.set.mockReturnThis();
+      db.where.mockReturnThis();
+
+      await repository.clearCart(userId);
+
+      // findActiveCartByUserIdが呼ばれたことを確認
+      expect(db.select).toHaveBeenCalled();
+      expect(db.from).toHaveBeenCalledWith(carts);
+      expect(db.where).toHaveBeenCalledWith(
+        and(eq(carts.userId, userId), eq(carts.status, "active"))
+      );
+
+      // updateが呼ばれたことを確認
+      expect(db.update).toHaveBeenCalledWith(carts);
+      expect(db.set).toHaveBeenCalled();
+      expect(db.where).toHaveBeenCalledWith(eq(carts.id, mockCart.id));
+    });
+
+    it("should do nothing when no active cart exists", async () => {
+      const db = mockDb as any;
+      const userId = 1;
+
+      // findActiveCartByUserId のモック
+      db.select.mockReturnThis();
+      db.from.mockReturnThis();
+      db.where.mockReturnThis();
+      db.limit.mockReturnValueOnce([]);
+
+      await repository.clearCart(userId);
+
+      // findActiveCartByUserIdが呼ばれたことを確認
+      expect(db.select).toHaveBeenCalled();
+      expect(db.from).toHaveBeenCalledWith(carts);
+      expect(db.where).toHaveBeenCalledWith(
+        and(eq(carts.userId, userId), eq(carts.status, "active"))
+      );
+
+      // updateが呼ばれていないことを確認
+      expect(db.update).not.toHaveBeenCalled();
+    });
+  });
 });

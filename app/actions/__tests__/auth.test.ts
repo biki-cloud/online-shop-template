@@ -307,5 +307,87 @@ describe("Auth Actions", () => {
         error: "アカウントの更新に失敗しました",
       });
     });
+
+    it("should handle non-Error exceptions in updateAccount", async () => {
+      mockUserService.update.mockRejectedValue("一般的なエラー");
+
+      const formData = new FormData();
+      formData.append("name", "Updated Name");
+      formData.append("email", "updated@example.com");
+
+      const result = await updateAccount(defaultState, formData);
+
+      expect(result).toEqual({
+        error: "アカウントの更新に失敗しました",
+      });
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle non-Error exceptions in signIn", async () => {
+      mockAuthService.signIn.mockRejectedValue("一般的なエラー");
+
+      const formData = new FormData();
+      formData.append("email", "test@example.com");
+      formData.append("password", "password123");
+
+      const result = await signIn(defaultState, formData);
+
+      expect(result).toEqual({
+        error: "無効な認証情報です",
+        email: "test@example.com",
+        password: "password123",
+      });
+    });
+
+    it("should handle non-Error exceptions in signUp", async () => {
+      mockAuthService.signUp.mockRejectedValue("一般的なエラー");
+
+      const formData = new FormData();
+      formData.append("email", "test@example.com");
+      formData.append("password", "password123");
+      formData.append("name", "Test User");
+
+      const result = await signUp(defaultState, formData);
+
+      expect(result).toEqual({
+        error: "このメールアドレスは既に登録されています",
+        email: "test@example.com",
+        password: "password123",
+        name: "Test User",
+      });
+    });
+
+    it("should handle non-Error exceptions in updatePassword", async () => {
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
+      mockAuthService.comparePasswords.mockResolvedValue(true);
+      mockAuthService.updatePassword.mockRejectedValue("一般的なエラー");
+
+      const formData = new FormData();
+      formData.append("currentPassword", "oldPassword123");
+      formData.append("newPassword", "newPassword123");
+      formData.append("confirmPassword", "newPassword123");
+
+      const result = await updatePassword(defaultState, formData);
+
+      expect(result).toEqual({
+        error: "パスワードの更新に失敗しました",
+      });
+    });
+
+    it("should handle non-Error exceptions in deleteAccount", async () => {
+      jest.mocked(getCurrentUser).mockResolvedValue(mockUser);
+      mockAuthService.comparePasswords.mockResolvedValue(true);
+      mockUserService.delete.mockRejectedValue("一般的なエラー");
+
+      const formData = new FormData();
+      formData.append("password", "password123");
+
+      const result = await deleteAccount(defaultState, formData);
+
+      expect(result).toEqual({
+        error: "アカウントの削除に失敗しました",
+      });
+    });
   });
 });
