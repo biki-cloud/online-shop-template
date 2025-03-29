@@ -263,4 +263,165 @@ describe("Stripe Payment Integration", () => {
       ]);
     });
   });
+
+  describe("createCheckoutSession with different image URLs", () => {
+    const mockUserId = 1;
+    const mockCart: Cart = {
+      id: 1,
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: "active",
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (calculateOrderAmount as jest.Mock).mockReturnValue({
+        total: 2200,
+        tax: 200,
+      });
+      (createOrder as jest.Mock).mockResolvedValue({ id: 1 });
+      (createOrderItems as jest.Mock).mockResolvedValue([]);
+    });
+
+    it("should handle null imageUrl", async () => {
+      const cartItems: (CartItem & { product: Product | null })[] = [
+        {
+          id: 1,
+          cartId: 1,
+          productId: 1,
+          quantity: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          product: {
+            id: 1,
+            name: "Test Product",
+            description: "Test Description",
+            price: "1000",
+            currency: "JPY",
+            imageUrl: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            deletedAt: null,
+            stock: 10,
+          },
+        },
+      ];
+
+      await createCheckoutSession({
+        userId: mockUserId,
+        cart: mockCart,
+        cartItems,
+      });
+
+      // 画像URLがnullの場合にline_itemsが正しく作成されるか確認
+      expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          line_items: expect.arrayContaining([
+            expect.objectContaining({
+              price_data: expect.objectContaining({
+                product_data: expect.objectContaining({
+                  images: undefined,
+                }),
+              }),
+            }),
+          ]),
+        })
+      );
+    });
+
+    it("should handle absolute imageUrl", async () => {
+      const absoluteUrl = "https://example.com/image.jpg";
+      const cartItems: (CartItem & { product: Product | null })[] = [
+        {
+          id: 1,
+          cartId: 1,
+          productId: 1,
+          quantity: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          product: {
+            id: 1,
+            name: "Test Product",
+            description: "Test Description",
+            price: "1000",
+            currency: "JPY",
+            imageUrl: absoluteUrl,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            deletedAt: null,
+            stock: 10,
+          },
+        },
+      ];
+
+      await createCheckoutSession({
+        userId: mockUserId,
+        cart: mockCart,
+        cartItems,
+      });
+
+      // 絶対URLの場合は変換せずにそのまま使われるか確認
+      expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          line_items: expect.arrayContaining([
+            expect.objectContaining({
+              price_data: expect.objectContaining({
+                product_data: expect.objectContaining({
+                  images: [absoluteUrl],
+                }),
+              }),
+            }),
+          ]),
+        })
+      );
+    });
+
+    it("should handle relative imageUrl", async () => {
+      const relativeUrl = "/images/product.jpg";
+      const cartItems: (CartItem & { product: Product | null })[] = [
+        {
+          id: 1,
+          cartId: 1,
+          productId: 1,
+          quantity: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          product: {
+            id: 1,
+            name: "Test Product",
+            description: "Test Description",
+            price: "1000",
+            currency: "JPY",
+            imageUrl: relativeUrl,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            deletedAt: null,
+            stock: 10,
+          },
+        },
+      ];
+
+      await createCheckoutSession({
+        userId: mockUserId,
+        cart: mockCart,
+        cartItems,
+      });
+
+      // 相対URLの場合はベースURLと結合されるか確認
+      expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          line_items: expect.arrayContaining([
+            expect.objectContaining({
+              price_data: expect.objectContaining({
+                product_data: expect.objectContaining({
+                  images: ["http://localhost:3000/images/product.jpg"],
+                }),
+              }),
+            }),
+          ]),
+        })
+      );
+    });
+  });
 });

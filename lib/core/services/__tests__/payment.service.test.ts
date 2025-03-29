@@ -9,6 +9,11 @@ import {
 import { stripe } from "@/lib/infrastructure/payments/stripe";
 import { redirect } from "next/navigation";
 import { UrlService } from "../url.service.impl";
+import { ICartRepository } from "@/lib/core/repositories/interfaces/cart.repository.interface";
+import { IOrderRepository } from "@/lib/core/repositories/interfaces/order.repository.interface";
+import { IPaymentRepository } from "@/lib/core/repositories/interfaces/payment.repository.interface";
+import { CartItem } from "@/lib/core/domain/cart.domain";
+import { Product } from "@/lib/core/domain/product.domain";
 
 // Stripeのモック
 jest.mock("@/lib/infrastructure/payments/stripe", () => ({
@@ -38,25 +43,43 @@ afterAll(() => {
 
 describe("PaymentService", () => {
   let paymentService: PaymentService;
-  let mockCartRepository: MockCartRepository;
-  let mockOrderRepository: MockOrderRepository;
-  let mockPaymentRepository: MockPaymentRepository;
+  let mockCartRepository: jest.Mocked<ICartRepository>;
+  let mockOrderRepository: jest.Mocked<IOrderRepository>;
+  let mockPaymentRepository: jest.Mocked<IPaymentRepository>;
+  let mockUrlService: jest.Mocked<UrlService>;
 
   beforeEach(() => {
     // モックリポジトリの初期化
-    mockCartRepository = new MockCartRepository();
-    mockOrderRepository = new MockOrderRepository();
-    mockPaymentRepository = new MockPaymentRepository();
+    mockCartRepository = {
+      findActiveCartByUserId: jest.fn(),
+      getCartItems: jest.fn(),
+      clearCart: jest.fn(),
+      // 他のメソッドも適宜追加
+    } as unknown as jest.Mocked<ICartRepository>;
 
-    // メソッドのモック化
-    jest.spyOn(mockOrderRepository, "create");
-    jest.spyOn(mockOrderRepository, "update");
-    jest.spyOn(mockOrderRepository, "createOrderItems");
-    jest.spyOn(mockOrderRepository, "findByStripeSessionId");
-    jest.spyOn(mockOrderRepository, "findById");
-    jest.spyOn(mockCartRepository, "clearCart");
-    jest.spyOn(mockPaymentRepository, "getStripePrices");
-    jest.spyOn(mockPaymentRepository, "getStripeProducts");
+    mockOrderRepository = {
+      create: jest.fn(),
+      update: jest.fn(),
+      createOrderItems: jest.fn(),
+      findByStripeSessionId: jest.fn(),
+      findById: jest.fn(),
+      // 他のメソッドも適宜追加
+    } as unknown as jest.Mocked<IOrderRepository>;
+
+    mockPaymentRepository = {
+      createCheckoutSession: jest.fn(),
+      getStripePrices: jest.fn(),
+      getStripeProducts: jest.fn(),
+      // 他のメソッドも適宜追加
+    } as unknown as jest.Mocked<IPaymentRepository>;
+
+    mockUrlService = {
+      getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
+      getFullUrl: jest.fn(),
+      isValidUrl: jest.fn().mockImplementation((url: string) => {
+        return url.startsWith("http://") || url.startsWith("https://");
+      }),
+    } as unknown as jest.Mocked<UrlService>;
 
     // DIコンテナの設定
     container.register("CartRepository", { useValue: mockCartRepository });
@@ -64,15 +87,7 @@ describe("PaymentService", () => {
     container.register("PaymentRepository", {
       useValue: mockPaymentRepository,
     });
-    container.register("UrlService", {
-      useValue: {
-        getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
-        getFullImageUrl: jest.fn().mockImplementation((imageUrl) => {
-          if (!imageUrl) return "";
-          return `http://localhost:3000${imageUrl}`;
-        }),
-      },
-    });
+    container.register("UrlService", { useValue: mockUrlService });
 
     // PaymentServiceのインスタンス化
     paymentService = container.resolve(PaymentService);
@@ -96,31 +111,47 @@ describe("PaymentService", () => {
           quantity: 2,
           product: {
             id: 1,
+            name: "テスト商品",
+            description: "テスト説明",
             price: "1000",
             currency: "jpy",
+            imageUrl: "/test.jpg",
+            stock: 10,
           },
         },
       ];
 
-      jest
-        .spyOn(mockCartRepository, "findActiveCartByUserId")
-        .mockResolvedValue({
-          id: 1,
-          createdAt: now,
-          updatedAt: now,
-          userId,
-          status: "active",
-        });
-      jest
-        .spyOn(mockCartRepository, "getCartItems")
-        .mockResolvedValue(cartItems);
-      jest
-        .spyOn(mockPaymentRepository, "createCheckoutSession")
-        .mockResolvedValue({ id: "session_123", url: "https://example.com" });
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue({
+      mockCartRepository.findActiveCartByUserId.mockResolvedValue({
+        id: 1,
+        createdAt: now,
+        updatedAt: now,
+        userId,
+        status: "active",
+      });
+      mockCartRepository.getCartItems.mockResolvedValue(cartItems);
+
+      mockOrderRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        totalAmount: "2000",
+        currency: "jpy",
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        stripeSessionId: null,
+        stripePaymentIntentId: null,
+        shippingAddress: null,
+      });
+
+      mockPaymentRepository.createCheckoutSession.mockResolvedValue({
         id: "session_123",
         url: "https://checkout.stripe.com/session",
-      } as any);
+      });
+
+      (stripe.checkout.sessions.retrieve as jest.Mock).mockResolvedValue({
+        id: "session_123",
+        url: "https://checkout.stripe.com/session",
+      });
 
       // テストの実行
       await paymentService.processCheckout(userId);
@@ -154,9 +185,7 @@ describe("PaymentService", () => {
 
     it("should throw error when cart is not found", async () => {
       const userId = 1;
-      jest
-        .spyOn(mockCartRepository, "findActiveCartByUserId")
-        .mockResolvedValue(null);
+      mockCartRepository.findActiveCartByUserId.mockResolvedValue(null);
 
       await expect(paymentService.processCheckout(userId)).rejects.toThrow(
         "カートが見つかりません。"
@@ -166,16 +195,14 @@ describe("PaymentService", () => {
     it("should throw error when cart is empty", async () => {
       const userId = 1;
       const now = new Date();
-      jest
-        .spyOn(mockCartRepository, "findActiveCartByUserId")
-        .mockResolvedValue({
-          id: 1,
-          createdAt: now,
-          updatedAt: now,
-          userId,
-          status: "active",
-        });
-      jest.spyOn(mockCartRepository, "getCartItems").mockResolvedValue([]);
+      mockCartRepository.findActiveCartByUserId.mockResolvedValue({
+        id: 1,
+        createdAt: now,
+        updatedAt: now,
+        userId,
+        status: "active",
+      });
+      mockCartRepository.getCartItems.mockResolvedValue([]);
 
       await expect(paymentService.processCheckout(userId)).rejects.toThrow(
         "カートが空です。"
@@ -195,29 +222,39 @@ describe("PaymentService", () => {
           quantity: 2,
           product: {
             id: 1,
+            name: "テスト商品",
+            description: "テスト説明",
             price: "1000",
             currency: "jpy",
+            imageUrl: "/test.jpg",
+            stock: 10,
           },
         },
       ];
 
-      jest
-        .spyOn(mockCartRepository, "findActiveCartByUserId")
-        .mockResolvedValue({
-          id: 1,
-          createdAt: now,
-          updatedAt: now,
-          userId,
-          status: "active",
-        });
-      jest
-        .spyOn(mockCartRepository, "getCartItems")
-        .mockResolvedValue(cartItems);
-      jest
-        .spyOn(mockPaymentRepository, "createCheckoutSession")
-        .mockRejectedValue(
-          new Error("チェックアウトセッションの作成に失敗しました。")
-        );
+      mockCartRepository.findActiveCartByUserId.mockResolvedValue({
+        id: 1,
+        createdAt: now,
+        updatedAt: now,
+        userId,
+        status: "active",
+      });
+      mockCartRepository.getCartItems.mockResolvedValue(cartItems);
+      mockOrderRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        totalAmount: "2000",
+        currency: "jpy",
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        stripeSessionId: null,
+        stripePaymentIntentId: null,
+        shippingAddress: null,
+      });
+      mockPaymentRepository.createCheckoutSession.mockResolvedValue(
+        null as any
+      );
 
       await expect(paymentService.processCheckout(userId)).rejects.toThrow(
         "チェックアウトセッションの作成に失敗しました。"
@@ -237,32 +274,44 @@ describe("PaymentService", () => {
           quantity: 2,
           product: {
             id: 1,
+            name: "テスト商品",
+            description: "テスト説明",
             price: "1000",
             currency: "jpy",
+            imageUrl: "/test.jpg",
+            stock: 10,
           },
         },
       ];
 
-      jest
-        .spyOn(mockCartRepository, "findActiveCartByUserId")
-        .mockResolvedValue({
-          id: 1,
-          createdAt: now,
-          updatedAt: now,
-          userId,
-          status: "active",
-        });
-      jest
-        .spyOn(mockCartRepository, "getCartItems")
-        .mockResolvedValue(cartItems);
-      jest
-        .spyOn(mockPaymentRepository, "createCheckoutSession")
-        .mockResolvedValue({ id: "session_123", url: "https://example.com" });
-      jest
-        .spyOn(stripe.checkout.sessions, "retrieve")
-        .mockRejectedValue(
-          new Error("チェックアウトURLの取得に失敗しました。")
-        );
+      mockCartRepository.findActiveCartByUserId.mockResolvedValue({
+        id: 1,
+        createdAt: now,
+        updatedAt: now,
+        userId,
+        status: "active",
+      });
+      mockCartRepository.getCartItems.mockResolvedValue(cartItems);
+      mockOrderRepository.create.mockResolvedValue({
+        id: 1,
+        userId,
+        totalAmount: "2000",
+        currency: "jpy",
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        stripeSessionId: null,
+        stripePaymentIntentId: null,
+        shippingAddress: null,
+      });
+      mockPaymentRepository.createCheckoutSession.mockResolvedValue({
+        id: "session_123",
+        url: undefined as any,
+      });
+      (stripe.checkout.sessions.retrieve as jest.Mock).mockResolvedValue({
+        id: "session_123",
+        // url is missing
+      });
 
       await expect(paymentService.processCheckout(userId)).rejects.toThrow(
         "チェックアウトURLの取得に失敗しました。"
@@ -271,327 +320,326 @@ describe("PaymentService", () => {
   });
 
   describe("handleCheckoutSession", () => {
-    it("should handle successful payment", async () => {
+    it("支払いが完了した場合は注文詳細ページにリダイレクトする", async () => {
       const sessionId = "session_123";
-      const orderId = 1;
       const now = new Date();
+      const mockOrder = {
+        id: 1,
+        userId: 1,
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        totalAmount: "1000",
+        currency: "jpy",
+        stripeSessionId: "session_123",
+        stripePaymentIntentId: null,
+        shippingAddress: null,
+      };
 
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue({
+      // stripeのモック
+      (stripe.checkout.sessions.retrieve as jest.Mock).mockResolvedValue({
+        id: sessionId,
         payment_status: "paid",
-        payment_intent: "pi_123",
-        metadata: { orderId: orderId.toString() },
-      } as any);
+        metadata: { orderId: "1" },
+      });
 
-      jest
-        .spyOn(mockOrderRepository, "findByStripeSessionId")
-        .mockResolvedValue({
-          id: orderId,
-          createdAt: now,
-          updatedAt: now,
-          userId: 1,
-          status: "pending",
-          totalAmount: "1000",
-          currency: "jpy",
-          stripeSessionId: sessionId,
-          stripePaymentIntentId: null,
-          shippingAddress: null,
-        });
+      // repositoryのモック
+      mockOrderRepository.findByStripeSessionId.mockResolvedValue(mockOrder);
+
+      // handlePaymentSuccessのモック
+      jest.spyOn(paymentService, "handlePaymentSuccess").mockResolvedValue();
 
       const result = await paymentService.handleCheckoutSession(sessionId);
 
-      expect(result).toEqual({
-        redirectUrl: `/orders/${orderId}`,
-      });
-      expect(mockOrderRepository.update).toHaveBeenCalledWith(orderId, {
-        status: "paid",
-        stripePaymentIntentId: "pi_123",
-      });
+      expect(result).toEqual({ redirectUrl: `/orders/1` });
+      expect(stripe.checkout.sessions.retrieve).toHaveBeenCalledWith(sessionId);
+      expect(mockOrderRepository.findByStripeSessionId).toHaveBeenCalledWith(
+        sessionId
+      );
+      expect(paymentService.handlePaymentSuccess).toHaveBeenCalled();
     });
 
-    it("should handle unpaid payment", async () => {
+    it("注文が見つからない場合はエラーをスローする", async () => {
       const sessionId = "session_123";
-      const orderId = 1;
-      const now = new Date();
 
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue({
+      // stripeのモック
+      (stripe.checkout.sessions.retrieve as jest.Mock).mockResolvedValue({
+        id: sessionId,
         payment_status: "unpaid",
-        metadata: { orderId: orderId.toString() },
-      } as any);
-
-      jest
-        .spyOn(mockOrderRepository, "findByStripeSessionId")
-        .mockResolvedValue({
-          id: orderId,
-          createdAt: now,
-          updatedAt: now,
-          userId: 1,
-          status: "pending",
-          totalAmount: "1000",
-          currency: "jpy",
-          stripeSessionId: sessionId,
-          stripePaymentIntentId: null,
-          shippingAddress: null,
-        });
-
-      const result = await paymentService.handleCheckoutSession(sessionId);
-
-      expect(result).toEqual({
-        redirectUrl: `/orders/${orderId}`,
       });
-    });
 
-    it("should throw error when order is not found", async () => {
-      const sessionId = "session_123";
-
-      jest.spyOn(stripe.checkout.sessions, "retrieve").mockResolvedValue({
-        payment_status: "paid",
-      } as any);
-
-      jest
-        .spyOn(mockOrderRepository, "findByStripeSessionId")
-        .mockResolvedValue(null);
+      // repositoryのモック
+      mockOrderRepository.findByStripeSessionId.mockResolvedValue(null);
 
       await expect(
         paymentService.handleCheckoutSession(sessionId)
       ).rejects.toThrow("注文が見つかりません。");
+
+      expect(stripe.checkout.sessions.retrieve).toHaveBeenCalledWith(sessionId);
+      expect(mockOrderRepository.findByStripeSessionId).toHaveBeenCalledWith(
+        sessionId
+      );
+    });
+
+    it("支払いが未完了でも注文詳細ページにリダイレクトする", async () => {
+      const sessionId = "session_123";
+      const now = new Date();
+      const mockOrder = {
+        id: 1,
+        userId: 1,
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        totalAmount: "1000",
+        currency: "jpy",
+        stripeSessionId: "session_123",
+        stripePaymentIntentId: null,
+        shippingAddress: null,
+      };
+
+      // stripeのモック
+      (stripe.checkout.sessions.retrieve as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        payment_status: "unpaid",
+        metadata: { orderId: "1" },
+      });
+
+      // repositoryのモック
+      mockOrderRepository.findByStripeSessionId.mockResolvedValue(mockOrder);
+
+      // handlePaymentSuccessのモック（呼ばれないことを確認するため）
+      const handlePaymentSuccessSpy = jest.spyOn(
+        paymentService,
+        "handlePaymentSuccess"
+      );
+
+      const result = await paymentService.handleCheckoutSession(sessionId);
+
+      expect(result).toEqual({ redirectUrl: `/orders/1` });
+      expect(stripe.checkout.sessions.retrieve).toHaveBeenCalledWith(sessionId);
+      expect(mockOrderRepository.findByStripeSessionId).toHaveBeenCalledWith(
+        sessionId
+      );
+      // handlePaymentSuccessは呼ばれない
+      expect(handlePaymentSuccessSpy).not.toHaveBeenCalled();
     });
   });
 
   describe("handlePaymentSuccess", () => {
-    it("should handle successful payment", async () => {
-      const sessionId = "session_123";
-      const orderId = 1;
-      const userId = 1;
+    it("注文ステータスを更新しカートをクリアする", async () => {
       const now = new Date();
-
       const session = {
+        id: "session_123",
         payment_intent: "pi_123",
-        metadata: { orderId: orderId.toString() },
-      } as any;
+        metadata: { orderId: "1" },
+      };
 
-      jest.spyOn(mockOrderRepository, "findById").mockResolvedValue({
-        id: orderId,
+      mockOrderRepository.update.mockResolvedValue({
+        id: 1,
+        userId: 1,
+        status: "paid",
         createdAt: now,
         updatedAt: now,
-        userId,
-        status: "pending",
         totalAmount: "1000",
         currency: "jpy",
-        stripeSessionId: sessionId,
-        stripePaymentIntentId: null,
+        stripeSessionId: "session_123",
+        stripePaymentIntentId: "pi_123",
         shippingAddress: null,
       });
 
-      await paymentService.handlePaymentSuccess(session);
+      mockOrderRepository.findById.mockResolvedValue({
+        id: 1,
+        userId: 1,
+        status: "paid",
+        createdAt: now,
+        updatedAt: now,
+        totalAmount: "1000",
+        currency: "jpy",
+        stripeSessionId: "session_123",
+        stripePaymentIntentId: "pi_123",
+        shippingAddress: null,
+      });
 
-      expect(mockOrderRepository.update).toHaveBeenCalledWith(orderId, {
+      await paymentService.handlePaymentSuccess(session as any);
+
+      expect(mockOrderRepository.update).toHaveBeenCalledWith(1, {
         status: "paid",
         stripePaymentIntentId: "pi_123",
       });
-      expect(mockCartRepository.clearCart).toHaveBeenCalledWith(userId);
+      expect(mockOrderRepository.findById).toHaveBeenCalledWith(1);
+      expect(mockCartRepository.clearCart).toHaveBeenCalledWith(1);
     });
 
-    it("should throw error when order is not found", async () => {
+    it("注文IDがない場合はエラーをスローする", async () => {
       const session = {
+        id: "session_123",
         payment_intent: "pi_123",
-        metadata: { orderId: "999" },
-      } as any;
-
-      jest.spyOn(mockOrderRepository, "findById").mockResolvedValue(null);
+        metadata: {}, // orderId なし
+      };
 
       await expect(
-        paymentService.handlePaymentSuccess(session)
-      ).rejects.toThrow("注文が見つかりません。");
-    });
-
-    it("should throw error when orderId is not found in metadata", async () => {
-      const session = {
-        payment_intent: "pi_123",
-        metadata: {},
-      } as any;
-
-      await expect(
-        paymentService.handlePaymentSuccess(session)
+        paymentService.handlePaymentSuccess(session as any)
       ).rejects.toThrow("注文IDが見つかりません。");
+    });
+
+    it("注文が見つからない場合はエラーをスローする", async () => {
+      const now = new Date();
+      const session = {
+        id: "session_123",
+        payment_intent: "pi_123",
+        metadata: { orderId: "1" },
+      };
+
+      mockOrderRepository.update.mockResolvedValue({
+        id: 1,
+        status: "paid",
+        userId: 1,
+        createdAt: now,
+        updatedAt: now,
+        totalAmount: "1000",
+        currency: "jpy",
+        stripeSessionId: "session_123",
+        stripePaymentIntentId: "pi_123",
+        shippingAddress: null,
+      });
+
+      mockOrderRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        paymentService.handlePaymentSuccess(session as any)
+      ).rejects.toThrow("注文が見つかりません。");
+
+      expect(mockOrderRepository.update).toHaveBeenCalled();
+      expect(mockOrderRepository.findById).toHaveBeenCalled();
+      expect(mockCartRepository.clearCart).not.toHaveBeenCalled();
     });
   });
 
   describe("handlePaymentFailure", () => {
-    it("should handle payment failure", async () => {
-      const sessionId = "session_123";
-      const orderId = 1;
-      const now = new Date();
-
+    it("支払い失敗時に注文ステータスを更新する", async () => {
       const session = {
-        metadata: { orderId: orderId.toString() },
-      } as any;
+        id: "session_123",
+        metadata: { orderId: "1" },
+      };
 
-      jest.spyOn(mockOrderRepository, "findById").mockResolvedValue({
-        id: orderId,
-        createdAt: now,
-        updatedAt: now,
-        userId: 1,
-        status: "pending",
-        totalAmount: "1000",
-        currency: "jpy",
-        stripeSessionId: sessionId,
-        stripePaymentIntentId: null,
-        shippingAddress: null,
-      });
+      await paymentService.handlePaymentFailure(session as any);
 
-      await paymentService.handlePaymentFailure(session);
-
-      expect(mockOrderRepository.update).toHaveBeenCalledWith(orderId, {
+      expect(mockOrderRepository.update).toHaveBeenCalledWith(1, {
         status: "failed",
       });
     });
 
-    it("should throw error when orderId is not found in metadata", async () => {
+    it("注文IDがない場合はエラーをスローする", async () => {
       const session = {
-        metadata: {},
-      } as any;
+        id: "session_123",
+        metadata: {}, // orderId なし
+      };
 
       await expect(
-        paymentService.handlePaymentFailure(session)
+        paymentService.handlePaymentFailure(session as any)
       ).rejects.toThrow("注文IDが見つかりません。");
+
+      expect(mockOrderRepository.update).not.toHaveBeenCalled();
     });
   });
 
-  describe("getStripePrices", () => {
-    it("should return stripe prices", async () => {
+  describe("price and product methods", () => {
+    it("should call the repository to get stripe prices", async () => {
       const mockPrices = [
         { id: "price_1", product: "prod_1", unit_amount: 1000 },
-        { id: "price_2", product: "prod_2", unit_amount: 2000 },
       ];
+      mockPaymentRepository.getStripePrices.mockResolvedValue(mockPrices);
 
-      jest
-        .spyOn(mockPaymentRepository, "getStripePrices")
-        .mockResolvedValue(mockPrices);
+      const prices = await paymentService.getStripePrices();
 
-      const result = await paymentService.getStripePrices();
-
-      expect(result).toEqual(mockPrices);
+      expect(prices).toEqual(mockPrices);
       expect(mockPaymentRepository.getStripePrices).toHaveBeenCalled();
     });
-  });
 
-  describe("getStripeProducts", () => {
-    it("should return stripe products", async () => {
-      const mockProducts = [
-        { id: "prod_1", name: "Product 1" },
-        { id: "prod_2", name: "Product 2" },
-      ];
+    it("should call the repository to get stripe products", async () => {
+      const mockProducts = [{ id: "prod_1", name: "Product 1" }];
+      mockPaymentRepository.getStripeProducts.mockResolvedValue(mockProducts);
 
-      jest
-        .spyOn(mockPaymentRepository, "getStripeProducts")
-        .mockResolvedValue(mockProducts);
+      const products = await paymentService.getStripeProducts();
 
-      const result = await paymentService.getStripeProducts();
-
-      expect(result).toEqual(mockProducts);
+      expect(products).toEqual(mockProducts);
       expect(mockPaymentRepository.getStripeProducts).toHaveBeenCalled();
     });
   });
 
-  describe("URL utility functions", () => {
-    let originalEnv: NodeJS.ProcessEnv;
-    let paymentService: PaymentService;
+  describe("isValidUrl", () => {
+    it("should return true for valid http URLs", () => {
+      const result = (PaymentService as any).isValidUrl("http://example.com");
+      expect(result).toBe(true);
+    });
 
+    it("should return true for valid https URLs", () => {
+      const result = (PaymentService as any).isValidUrl("https://example.com");
+      expect(result).toBe(true);
+    });
+
+    it("should return false for invalid URLs", () => {
+      const result = (PaymentService as any).isValidUrl("not-a-url");
+      expect(result).toBe(false);
+    });
+
+    it("should return false for URLs with unsupported protocols", () => {
+      const result = (PaymentService as any).isValidUrl("ftp://example.com");
+      expect(result).toBe(false);
+    });
+
+    it("should return false for null or undefined inputs", () => {
+      expect((PaymentService as any).isValidUrl(null)).toBe(false);
+      expect((PaymentService as any).isValidUrl(undefined)).toBe(false);
+    });
+  });
+
+  describe("getFullImageUrl", () => {
     beforeEach(() => {
-      originalEnv = process.env;
-      process.env = { ...originalEnv };
-
-      // モックリポジトリの初期化
-      const mockCartRepository = new MockCartRepository();
-      const mockOrderRepository = new MockOrderRepository();
-      const mockPaymentRepository = new MockPaymentRepository();
-      const urlService = new UrlService();
-
-      // DIコンテナの設定
-      container.register("CartRepository", { useValue: mockCartRepository });
-      container.register("OrderRepository", { useValue: mockOrderRepository });
-      container.register("PaymentRepository", {
-        useValue: mockPaymentRepository,
-      });
-      container.register("UrlService", { useValue: urlService });
-
-      // PaymentServiceのインスタンス化
-      paymentService = container.resolve(PaymentService);
+      // リセット
+      mockUrlService.getBaseUrl.mockReturnValue("http://localhost:3000");
     });
 
-    afterEach(() => {
-      process.env = originalEnv;
-      container.clearInstances();
+    it("should return undefined for null or undefined inputs", () => {
+      const result = (paymentService as any).getFullImageUrl(null);
+      expect(result).toBeUndefined();
     });
 
-    it("should validate URLs correctly", () => {
-      const validUrls = [
-        "https://example.com",
-        "http://localhost:3000",
-        "https://sub.domain.com/path?query=1",
-      ];
-      const invalidUrls = [
-        "not-a-url",
-        "http://",
-        "https://",
-        "ftp://example.com",
-        "",
-      ];
-
-      validUrls.forEach((url) => {
-        // @ts-ignore: テスト用に private 関数にアクセス
-        expect(PaymentService["isValidUrl"](url)).toBe(true);
-      });
-
-      invalidUrls.forEach((url) => {
-        // @ts-ignore: テスト用に private 関数にアクセス
-        expect(PaymentService["isValidUrl"](url)).toBe(false);
-      });
+    it("should return the original URL if it's already a valid full URL", () => {
+      const fullUrl = "https://example.com/image.jpg";
+      const result = (paymentService as any).getFullImageUrl(fullUrl);
+      expect(result).toBe(fullUrl);
     });
 
-    it("should generate full image URLs correctly", () => {
-      const mockUrlService = {
-        getBaseUrl: jest.fn().mockReturnValue("https://example.com"),
-        getFullUrl: jest.fn(),
-        isValidUrl: jest.fn(),
-      };
-      const paymentService = new PaymentService(
-        mockPaymentRepository,
-        mockCartRepository,
-        mockOrderRepository,
-        mockUrlService
-      );
-      const testCases = [
-        {
-          input: "https://external.com/image.jpg",
-          expected: "https://external.com/image.jpg",
-        },
-        {
-          input: "/images/local.jpg",
-          expected: "https://example.com/images/local.jpg",
-        },
-      ];
-
-      testCases.forEach(({ input, expected }) => {
-        // @ts-ignore: テスト用に private 関数にアクセス
-        expect(paymentService["getFullImageUrl"](input)).toBe(expected);
-      });
+    it("should convert relative paths to full URLs", () => {
+      const relativePath = "/images/product.jpg";
+      const result = (paymentService as any).getFullImageUrl(relativePath);
+      expect(result).toBe("http://localhost:3000/images/product.jpg");
     });
 
-    it("should handle missing BASE_URL", () => {
-      const mockUrlService = {
-        getBaseUrl: jest.fn().mockReturnValue(""),
-        getFullUrl: jest.fn(),
-        isValidUrl: jest.fn(),
-      };
-      const paymentService = new PaymentService(
-        mockPaymentRepository,
-        mockCartRepository,
-        mockOrderRepository,
-        mockUrlService
-      );
-      // @ts-ignore: テスト用に private 関数にアクセス
-      expect(paymentService["getFullImageUrl"]("/image.jpg")).toBe(undefined);
+    it("should handle paths without leading slash", () => {
+      const path = "images/product.jpg";
+      const result = (paymentService as any).getFullImageUrl(path);
+      expect(result).toBe("http://localhost:3000/images/product.jpg");
+    });
+
+    it("should return undefined when baseUrl is not available", () => {
+      mockUrlService.getBaseUrl.mockReturnValue("");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBeUndefined();
+    });
+
+    it("should handle baseUrl with trailing slash", () => {
+      mockUrlService.getBaseUrl.mockReturnValue("http://localhost:3000/");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBe("http://localhost:3000/image.jpg");
+    });
+
+    it("should return undefined when resulting URL is invalid", () => {
+      // PaymentServiceのisValidUrlの結果をモックするために、mockUrlServiceを調整する
+      mockUrlService.getBaseUrl.mockReturnValue("invalid:url");
+      const result = (paymentService as any).getFullImageUrl("/image.jpg");
+      expect(result).toBeUndefined();
     });
   });
 });

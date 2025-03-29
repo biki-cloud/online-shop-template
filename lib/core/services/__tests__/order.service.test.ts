@@ -145,4 +145,135 @@ describe("OrderService", () => {
       });
     });
   });
+
+  describe("findAll", () => {
+    it("すべての注文を返す", async () => {
+      mockOrderRepository.findAll.mockResolvedValue([mockOrder]);
+
+      const orders = await orderService.findAll();
+
+      expect(orders).toEqual([mockOrder]);
+      expect(mockOrderRepository.findAll).toHaveBeenCalled();
+    });
+
+    it("注文がない場合は空配列を返す", async () => {
+      mockOrderRepository.findAll.mockResolvedValue([]);
+
+      const orders = await orderService.findAll();
+
+      expect(orders).toEqual([]);
+      expect(mockOrderRepository.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe("getOrderItems", () => {
+    const mockOrderItems: (OrderItem & {
+      product: {
+        id: number;
+        name: string;
+        imageUrl: string | null;
+      } | null;
+    })[] = [
+      {
+        id: 1,
+        orderId: 1,
+        productId: 1,
+        quantity: 2,
+        price: "1000",
+        currency: "JPY",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        product: {
+          id: 1,
+          name: "テスト商品",
+          imageUrl: "/images/test.jpg",
+        },
+      },
+    ];
+
+    it("指定された注文のアイテムを返す", async () => {
+      mockOrderRepository.getOrderItems.mockResolvedValue(mockOrderItems);
+
+      const orderItems = await orderService.getOrderItems(1);
+
+      expect(orderItems).toEqual(mockOrderItems);
+      expect(mockOrderRepository.getOrderItems).toHaveBeenCalledWith(1);
+    });
+
+    it("注文アイテムがない場合は空配列を返す", async () => {
+      mockOrderRepository.getOrderItems.mockResolvedValue([]);
+
+      const orderItems = await orderService.getOrderItems(1);
+
+      expect(orderItems).toEqual([]);
+      expect(mockOrderRepository.getOrderItems).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe("createOrderItem", () => {
+    const mockOrderItem: OrderItem = {
+      id: 1,
+      orderId: 1,
+      productId: 1,
+      quantity: 2,
+      price: "1000",
+      currency: "JPY",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    it("新しい注文アイテムを作成する", async () => {
+      mockOrderRepository.createOrderItems.mockResolvedValue([mockOrderItem]);
+
+      const orderItem = await orderService.createOrderItem({
+        orderId: 1,
+        productId: 1,
+        quantity: 2,
+        price: "1000",
+        currency: "JPY",
+      });
+
+      expect(orderItem).toEqual(mockOrderItem);
+      expect(mockOrderRepository.createOrderItems).toHaveBeenCalledWith(1, [
+        {
+          productId: 1,
+          quantity: 2,
+          price: "1000",
+          currency: "JPY",
+        },
+      ]);
+    });
+  });
+
+  describe("findByStripeSessionId", () => {
+    it("Stripeセッションに関連する注文を返す", async () => {
+      const mockOrderWithSession = {
+        ...mockOrder,
+        stripeSessionId: "session_id_123",
+      };
+      mockOrderRepository.findByStripeSessionId.mockResolvedValue(
+        mockOrderWithSession
+      );
+
+      const order = await orderService.findByStripeSessionId("session_id_123");
+
+      expect(order).toEqual(mockOrderWithSession);
+      expect(mockOrderRepository.findByStripeSessionId).toHaveBeenCalledWith(
+        "session_id_123"
+      );
+    });
+
+    it("セッションIDに該当する注文がない場合はnullを返す", async () => {
+      mockOrderRepository.findByStripeSessionId.mockResolvedValue(null);
+
+      const order = await orderService.findByStripeSessionId(
+        "non_existent_session"
+      );
+
+      expect(order).toBeNull();
+      expect(mockOrderRepository.findByStripeSessionId).toHaveBeenCalledWith(
+        "non_existent_session"
+      );
+    });
+  });
 });
