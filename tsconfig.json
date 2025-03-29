@@ -24,7 +24,7 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": ["jest", "@testing-library/jest-dom"]
+    "types": ["jest", "@testing-library/jest-dom", "@jest/globals"]
   },
   "include": [
     "next-env.d.ts",

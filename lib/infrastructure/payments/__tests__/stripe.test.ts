@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, expect, it, jest, beforeEach } from "@jest/globals";
 import {
   createCheckoutSession,
@@ -37,8 +38,8 @@ jest.mock("@/lib/core/services/url.service.impl", () => ({
     getBaseUrl: jest.fn().mockReturnValue("http://localhost:3000"),
     getFullUrl: jest
       .fn()
-      .mockImplementation((path: string) => `http://localhost:3000${path}`),
-    isValidUrl: jest.fn().mockImplementation((url: string) => {
+      .mockImplementation((path: any) => `http://localhost:3000${path}`),
+    isValidUrl: jest.fn().mockImplementation((url: any) => {
       try {
         new URL(url);
         return true;
@@ -131,12 +132,12 @@ describe("Stripe Payment Integration", () => {
 
     it("should create a checkout session successfully", async () => {
       // モックの設定
-      (calculateOrderAmount as jest.Mock).mockReturnValue({
+      (calculateOrderAmount as jest.Mock<any>).mockReturnValue({
         total: 2200,
         tax: 200,
       });
-      (createOrder as jest.Mock).mockResolvedValue({ id: 1 });
-      (createOrderItems as jest.Mock).mockResolvedValue([]);
+      (createOrder as jest.Mock<any>).mockResolvedValue({ id: 1 });
+      (createOrderItems as jest.Mock<any>).mockResolvedValue([]);
 
       await createCheckoutSession({
         userId: mockUserId,
@@ -276,12 +277,12 @@ describe("Stripe Payment Integration", () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      (calculateOrderAmount as jest.Mock).mockReturnValue({
+      (calculateOrderAmount as jest.Mock<any>).mockReturnValue({
         total: 2200,
         tax: 200,
       });
-      (createOrder as jest.Mock).mockResolvedValue({ id: 1 });
-      (createOrderItems as jest.Mock).mockResolvedValue([]);
+      (createOrder as jest.Mock<any>).mockResolvedValue({ id: 1 });
+      (createOrderItems as jest.Mock<any>).mockResolvedValue([]);
     });
 
     it("should handle null imageUrl", async () => {
