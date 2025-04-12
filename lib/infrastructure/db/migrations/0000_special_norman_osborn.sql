@@ -1,4 +1,7 @@
-CREATE TABLE "cart_items" (
+-- スキーマはすでに存在するため、この行をコメントアウト
+-- CREATE SCHEMA "online_shop_template";
+--> statement-breakpoint
+CREATE TABLE "online_shop_template"."cart_items" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"cart_id" integer NOT NULL,
 	"product_id" integer NOT NULL,
@@ -7,7 +10,7 @@ CREATE TABLE "cart_items" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "carts" (
+CREATE TABLE "online_shop_template"."carts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
 	"status" varchar(20) DEFAULT 'active' NOT NULL,
@@ -15,7 +18,7 @@ CREATE TABLE "carts" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "order_items" (
+CREATE TABLE "online_shop_template"."order_items" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"order_id" integer NOT NULL,
 	"product_id" integer NOT NULL,
@@ -26,7 +29,7 @@ CREATE TABLE "order_items" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "orders" (
+CREATE TABLE "online_shop_template"."orders" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
 	"status" varchar(20) DEFAULT 'pending' NOT NULL,
@@ -41,7 +44,7 @@ CREATE TABLE "orders" (
 	CONSTRAINT "orders_stripe_payment_intent_id_unique" UNIQUE("stripe_payment_intent_id")
 );
 --> statement-breakpoint
-CREATE TABLE "products" (
+CREATE TABLE "online_shop_template"."products" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"description" text,
@@ -54,7 +57,7 @@ CREATE TABLE "products" (
 	"deleted_at" timestamp
 );
 --> statement-breakpoint
-CREATE TABLE "push_subscriptions" (
+CREATE TABLE "online_shop_template"."push_subscriptions" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" integer NOT NULL,
 	"endpoint" text NOT NULL,
@@ -64,7 +67,7 @@ CREATE TABLE "push_subscriptions" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "users" (
+CREATE TABLE "online_shop_template"."users" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(100),
 	"email" varchar(255) NOT NULL,
@@ -76,10 +79,10 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_cart_id_carts_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."carts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "carts" ADD CONSTRAINT "carts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "push_subscriptions" ADD CONSTRAINT "push_subscriptions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "online_shop_template"."cart_items" ADD CONSTRAINT "cart_items_cart_id_carts_id_fk" FOREIGN KEY ("cart_id") REFERENCES "online_shop_template"."carts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."cart_items" ADD CONSTRAINT "cart_items_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "online_shop_template"."products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."carts" ADD CONSTRAINT "carts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "online_shop_template"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."order_items" ADD CONSTRAINT "order_items_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "online_shop_template"."orders"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."order_items" ADD CONSTRAINT "order_items_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "online_shop_template"."products"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "online_shop_template"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "online_shop_template"."push_subscriptions" ADD CONSTRAINT "push_subscriptions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "online_shop_template"."users"("id") ON DELETE no action ON UPDATE no action;

@@ -202,12 +202,12 @@ In your Vercel project settings (or during deployment), add all the necessary en
 7. `NEXT_PUBLIC_SUPABASE_ANON_KEY`:
 
    - 説明: Supabase の匿名認証用キー
-   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → API → Project API keys → `anon public`
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → Data API → Project API keys → `anon public`
 
 8. `SUPABASE_SERVICE_ROLE_KEY`:
 
    - 説明: Supabase の管理者権限用キー（サーバーサイドでのみ使用）
-   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → API → Project API keys → `service_role secret`
+   - 取得方法: Supabase ダッシュボード → プロジェクト設定 → Data API → Project API keys → `service_role secret`
    - 注意: 絶対に公開しないでください
 
 9. `NEXT_PUBLIC_STORAGE_URL`:

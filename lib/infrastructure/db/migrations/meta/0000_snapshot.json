@@ -1,12 +1,12 @@
 {
-  "id": "e2d59a52-af31-4745-984d-667525c3ffcd",
+  "id": "941b54f6-509b-4290-9f17-22626e0bd32d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.cart_items": {
+    "online_shop_template.cart_items": {
       "name": "cart_items",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -54,6 +54,7 @@
           "name": "cart_items_cart_id_carts_id_fk",
           "tableFrom": "cart_items",
           "tableTo": "carts",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "cart_id"
           ],
@@ -67,6 +68,7 @@
           "name": "cart_items_product_id_products_id_fk",
           "tableFrom": "cart_items",
           "tableTo": "products",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "product_id"
           ],
@@ -83,9 +85,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.carts": {
+    "online_shop_template.carts": {
       "name": "carts",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -127,6 +129,7 @@
           "name": "carts_user_id_users_id_fk",
           "tableFrom": "carts",
           "tableTo": "users",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "user_id"
           ],
@@ -143,9 +146,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.order_items": {
+    "online_shop_template.order_items": {
       "name": "order_items",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -205,6 +208,7 @@
           "name": "order_items_order_id_orders_id_fk",
           "tableFrom": "order_items",
           "tableTo": "orders",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "order_id"
           ],
@@ -218,6 +222,7 @@
           "name": "order_items_product_id_products_id_fk",
           "tableFrom": "order_items",
           "tableTo": "products",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "product_id"
           ],
@@ -234,9 +239,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.orders": {
+    "online_shop_template.orders": {
       "name": "orders",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -309,6 +314,7 @@
           "name": "orders_user_id_users_id_fk",
           "tableFrom": "orders",
           "tableTo": "users",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "user_id"
           ],
@@ -340,9 +346,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.products": {
+    "online_shop_template.products": {
       "name": "products",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -417,9 +423,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.push_subscriptions": {
+    "online_shop_template.push_subscriptions": {
       "name": "push_subscriptions",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -472,6 +478,7 @@
           "name": "push_subscriptions_user_id_users_id_fk",
           "tableFrom": "push_subscriptions",
           "tableTo": "users",
+          "schemaTo": "online_shop_template",
           "columnsFrom": [
             "user_id"
           ],
@@ -488,9 +495,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.users": {
+    "online_shop_template.users": {
       "name": "users",
-      "schema": "",
+      "schema": "online_shop_template",
       "columns": {
         "id": {
           "name": "id",
@@ -562,7 +569,9 @@
     }
   },
   "enums": {},
-  "schemas": {},
+  "schemas": {
+    "online_shop_template": "online_shop_template"
+  },
   "sequences": {},
   "roles": {},
   "policies": {},
