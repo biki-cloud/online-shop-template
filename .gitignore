@@ -42,8 +42,15 @@ postgres_data/
 
 public/uploads/
 
+.env.common
+.env.local
+.env.local.tmpl
+.env.dev
+.env.dev.tmpl
 .env.prd
+.env.prd.tmpl
 .env.githubactions
+.env.githubactions.tmpl
 .env.vercel.preproduction
 .env.vercel.production
 

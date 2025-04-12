@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1740275491291,
-      "tag": "0000_first_yellow_claw",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1740275600242,
-      "tag": "0001_flimsy_golden_guardian",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1740306855600,
-      "tag": "0002_brave_black_crow",
+      "when": 1744417119908,
+      "tag": "0000_special_norman_osborn",
       "breakpoints": true
     }
   ]

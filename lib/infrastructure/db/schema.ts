@@ -6,10 +6,15 @@ import {
   text,
   timestamp,
   decimal,
+  pgSchema,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const users = pgTable("users", {
+// スキーマを定義
+export const schema = pgSchema("online_shop_template");
+
+// スキーマ内にテーブルを定義
+export const users = schema.table("users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -20,7 +25,7 @@ export const users = pgTable("users", {
   deletedAt: timestamp("deleted_at"),
 });
 
-export const products = pgTable("products", {
+export const products = schema.table("products", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
@@ -33,7 +38,7 @@ export const products = pgTable("products", {
   deletedAt: timestamp("deleted_at"),
 });
 
-export const carts = pgTable("carts", {
+export const carts = schema.table("carts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
     .notNull()
@@ -43,7 +48,7 @@ export const carts = pgTable("carts", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const cartItems = pgTable("cart_items", {
+export const cartItems = schema.table("cart_items", {
   id: serial("id").primaryKey(),
   cartId: integer("cart_id")
     .notNull()
@@ -56,7 +61,7 @@ export const cartItems = pgTable("cart_items", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const orders = pgTable("orders", {
+export const orders = schema.table("orders", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
     .notNull()
@@ -71,7 +76,7 @@ export const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const orderItems = pgTable("order_items", {
+export const orderItems = schema.table("order_items", {
   id: serial("id").primaryKey(),
   orderId: integer("order_id")
     .notNull()
@@ -86,7 +91,7 @@ export const orderItems = pgTable("order_items", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const pushSubscriptions = pgTable("push_subscriptions", {
+export const pushSubscriptions = schema.table("push_subscriptions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id")
     .notNull()

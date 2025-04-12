@@ -17,6 +17,7 @@ jobs:
   Unit-Test:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
@@ -61,10 +62,11 @@ jobs:
           path: coverage/
           retention-days: 30
 
-  Deploy-Preview:
+  Deploy:
     needs: Unit-Test
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
     outputs:
       preview-url: ${{ steps.preview.outputs.url }}
     steps:
@@ -102,9 +104,10 @@ jobs:
           mode: recreate
 
   E2E-Test:
-    needs: Deploy-Preview
+    needs: Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Preview' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3

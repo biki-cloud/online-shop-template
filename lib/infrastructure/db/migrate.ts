@@ -20,7 +20,7 @@ async function main() {
     const db = drizzle(sql);
 
     console.log("🔄 マイグレーションを実行中...");
-    await migrate(db, { migrationsFolder: "lib/db/migrations" });
+    await migrate(db, { migrationsFolder: "lib/infrastructure/db/migrations" });
     console.log("✅ マイグレーションが完了しました");
 
     process.exit(0);
