@@ -5,6 +5,8 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/$1",
     "^jose$": "<rootDir>/lib/infrastructure/auth/__mocks__/jose.ts",
+    "^lib/infrastructure/db/drizzle$":
+      "<rootDir>/lib/infrastructure/db/__mocks__/drizzle.ts",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testPathIgnorePatterns: [

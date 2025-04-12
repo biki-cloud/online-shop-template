@@ -5,7 +5,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export async function uploadFile(file: File, bucket: string = "products") {
+const bucketName = "online-shop-template-products";
+
+export async function uploadFile(file: File, bucket: string = bucketName) {
   console.log(`file upload. file:${file}, bucket: ${bucket}`);
   try {
     const fileExt = file.name.split(".").pop();
@@ -31,7 +33,7 @@ export async function uploadFile(file: File, bucket: string = "products") {
 
 export async function deleteFile(
   fileName: string,
-  bucket: string = "products"
+  bucket: string = bucketName
 ) {
   try {
     const { error } = await supabase.storage.from(bucket).remove([fileName]);
