@@ -6,6 +6,10 @@ global.TextDecoder = TextDecoder;
 
 // テスト用の環境変数を設定
 process.env.AUTH_SECRET = "test-auth-secret-key-for-testing-purposes-only";
+process.env.POSTGRES_URL =
+  "postgresql://postgres:postgres@localhost:5432/test_database";
+process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
 
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
